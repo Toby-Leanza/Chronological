@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 2f6ba638a9edb4c4bb7d5eb54b6a493f
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 167753
+  packageName: Pause Manager
+  packageVersion: 1.6.0
+  assetPath: Assets/Gabriel Pereira/Pause Manager/Scripts/Core/PauseManager-Runtime.asmdef
+  uploadId: 783112

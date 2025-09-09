@@ -1,0 +1,22 @@
+{
+    "name": "PauseManager-Editor",
+    "references": [
+        "GUID:75469ad4d38634e559750d17036d5f7c",
+        "GUID:2f6ba638a9edb4c4bb7d5eb54b6a493f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.0.0",
+            "define": "PAUSE_MANAGER_INPUT_SYSTEM"
+        }
+    ],
+    "noEngineReferences": false
+}

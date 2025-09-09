@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 56b87115b894f534c92c7b741fc2868e
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 167753
+  packageName: Pause Manager
+  packageVersion: 1.6.0
+  assetPath: Assets/Gabriel Pereira/Pause Manager/Scripts/Editor/PauseManager-Editor.asmdef
+  uploadId: 783112

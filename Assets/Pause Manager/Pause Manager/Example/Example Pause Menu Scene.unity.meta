@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 3515025245367604cba77dba4273c623
+timeCreated: 1595422115
+licenseType: Store
+DefaultImporter:
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 167753
+  packageName: Pause Manager
+  packageVersion: 1.6.0
+  assetPath: Assets/Gabriel Pereira/Pause Manager/Example/Example Pause Menu Scene.unity
+  uploadId: 783112

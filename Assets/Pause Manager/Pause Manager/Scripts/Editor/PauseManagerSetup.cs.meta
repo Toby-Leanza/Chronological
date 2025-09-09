@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c700d263eb1310643ad5ed19512ba9c2
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 167753
+  packageName: Pause Manager
+  packageVersion: 1.6.0
+  assetPath: Assets/Gabriel Pereira/Pause Manager/Scripts/Editor/PauseManagerSetup.cs
+  uploadId: 783112
