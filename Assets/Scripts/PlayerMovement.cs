@@ -3,8 +3,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
 {
-    public float speed = 5f;
-    public float jumpForce = 5f;
+    public float speed = 8f;
+    public float jumpForce = 10f;
     public Transform cameraTransform; // ? referencia a la cámara
 
     private Rigidbody rb;
