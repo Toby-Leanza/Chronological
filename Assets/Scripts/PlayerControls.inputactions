@@ -1,4 +1,5 @@
 {
+    "version": 1,
     "name": "PlayerControls",
     "maps": [
         {
@@ -31,6 +32,33 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Freeze",
+                    "type": "Button",
+                    "id": "a5972650-9b09-46da-8062-197d058a6162",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Rewind",
+                    "type": "Button",
+                    "id": "bc1cdb12-e3a3-4d10-9e65-e156b7b0da36",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Forward",
+                    "type": "Button",
+                    "id": "54d17e61-ec9e-48f8-9c6e-7d048b250de3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -108,6 +136,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "546ef204-4d97-47bc-8868-aee5ae4f2e9d",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Freeze",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c89e3c8f-9341-4e8d-babe-f52cf49f2043",
+                    "path": "<Keyboard>/r",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Rewind",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "04f40f49-6e99-40cc-a03c-e8a30e7786d9",
+                    "path": "<Keyboard>/t",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Forward",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

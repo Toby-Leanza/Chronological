@@ -118,6 +118,33 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""Freeze"",
+                    ""type"": ""Button"",
+                    ""id"": ""a5972650-9b09-46da-8062-197d058a6162"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Rewind"",
+                    ""type"": ""Button"",
+                    ""id"": ""bc1cdb12-e3a3-4d10-9e65-e156b7b0da36"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Forward"",
+                    ""type"": ""Button"",
+                    ""id"": ""54d17e61-ec9e-48f8-9c6e-7d048b250de3"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -197,6 +224,39 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
                     ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""546ef204-4d97-47bc-8868-aee5ae4f2e9d"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Freeze"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c89e3c8f-9341-4e8d-babe-f52cf49f2043"",
+                    ""path"": ""<Keyboard>/r"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Rewind"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""04f40f49-6e99-40cc-a03c-e8a30e7786d9"",
+                    ""path"": ""<Keyboard>/t"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Forward"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -208,6 +268,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         m_Player_Move = m_Player.FindAction("Move", throwIfNotFound: true);
         m_Player_Jump = m_Player.FindAction("Jump", throwIfNotFound: true);
         m_Player_Interact = m_Player.FindAction("Interact", throwIfNotFound: true);
+        m_Player_Freeze = m_Player.FindAction("Freeze", throwIfNotFound: true);
+        m_Player_Rewind = m_Player.FindAction("Rewind", throwIfNotFound: true);
+        m_Player_Forward = m_Player.FindAction("Forward", throwIfNotFound: true);
     }
 
     ~@PlayerControls()
@@ -291,6 +354,9 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Move;
     private readonly InputAction m_Player_Jump;
     private readonly InputAction m_Player_Interact;
+    private readonly InputAction m_Player_Freeze;
+    private readonly InputAction m_Player_Rewind;
+    private readonly InputAction m_Player_Forward;
     /// <summary>
     /// Provides access to input actions defined in input action map "Player".
     /// </summary>
@@ -314,6 +380,18 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Player/Interact".
         /// </summary>
         public InputAction @Interact => m_Wrapper.m_Player_Interact;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Freeze".
+        /// </summary>
+        public InputAction @Freeze => m_Wrapper.m_Player_Freeze;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Rewind".
+        /// </summary>
+        public InputAction @Rewind => m_Wrapper.m_Player_Rewind;
+        /// <summary>
+        /// Provides access to the underlying input action "Player/Forward".
+        /// </summary>
+        public InputAction @Forward => m_Wrapper.m_Player_Forward;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -349,6 +427,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Interact.started += instance.OnInteract;
             @Interact.performed += instance.OnInteract;
             @Interact.canceled += instance.OnInteract;
+            @Freeze.started += instance.OnFreeze;
+            @Freeze.performed += instance.OnFreeze;
+            @Freeze.canceled += instance.OnFreeze;
+            @Rewind.started += instance.OnRewind;
+            @Rewind.performed += instance.OnRewind;
+            @Rewind.canceled += instance.OnRewind;
+            @Forward.started += instance.OnForward;
+            @Forward.performed += instance.OnForward;
+            @Forward.canceled += instance.OnForward;
         }
 
         /// <summary>
@@ -369,6 +456,15 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
             @Interact.started -= instance.OnInteract;
             @Interact.performed -= instance.OnInteract;
             @Interact.canceled -= instance.OnInteract;
+            @Freeze.started -= instance.OnFreeze;
+            @Freeze.performed -= instance.OnFreeze;
+            @Freeze.canceled -= instance.OnFreeze;
+            @Rewind.started -= instance.OnRewind;
+            @Rewind.performed -= instance.OnRewind;
+            @Rewind.canceled -= instance.OnRewind;
+            @Forward.started -= instance.OnForward;
+            @Forward.performed -= instance.OnForward;
+            @Forward.canceled -= instance.OnForward;
         }
 
         /// <summary>
@@ -430,5 +526,26 @@ public partial class @PlayerControls: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnInteract(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Freeze" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnFreeze(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Rewind" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnRewind(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Forward" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnForward(InputAction.CallbackContext context);
     }
 }
