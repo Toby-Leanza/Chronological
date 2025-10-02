@@ -1,7 +1,7 @@
 using UnityEngine;
 using Chronos;
 
-public class TimeManager : MonoBehaviour
+public class TimeControls : MonoBehaviour
 {
     public Clock globalClock;
 
@@ -9,44 +9,42 @@ public class TimeManager : MonoBehaviour
     public float forwardSpeed = 2f;
     public float normalSpeed = 1f;
 
-    private float lastSpeed;
     private bool isFrozen = false;
+    private PlayerControls controls;
 
-    void Start()
+    void Awake()
     {
-        if (globalClock != null)
-        {
-            lastSpeed = normalSpeed;
-            globalClock.localTimeScale = normalSpeed;
-        }
-    }
+        controls = new PlayerControls();
 
-    void Update()
-    {
-        if (globalClock == null) return;
-
-        // Toggle congelar/descongelar con F
-        if (Input.GetKeyDown(KeyCode.F))
+        // Freeze toggle
+        controls.Player.Freeze.performed += ctx =>
         {
             isFrozen = !isFrozen;
-            lastSpeed = globalClock.localTimeScale;
             globalClock.localTimeScale = isFrozen ? 0f : normalSpeed;
             Debug.Log(isFrozen ? "¡Congelado!" : "¡Descongelado!");
-        }
+        };
 
-        // Rebobinar con R o avanzar con T
-        if (Input.GetKey(KeyCode.R) && isFrozen)
+        // Rewind
+        controls.Player.Rewind.performed += ctx =>
         {
-            globalClock.localTimeScale = rewindSpeed;
-        }
-        else if (Input.GetKey(KeyCode.T) && isFrozen)
+            if (isFrozen) globalClock.localTimeScale = rewindSpeed;
+        };
+        controls.Player.Rewind.canceled += ctx =>
         {
-            globalClock.localTimeScale = forwardSpeed;
-        }
-        else
+            if (isFrozen) globalClock.localTimeScale = 0f;
+        };
+
+        // Forward
+        controls.Player.Forward.performed += ctx =>
         {
-            // Si no se mantiene ninguna tecla, restauramos la velocidad
-            globalClock.localTimeScale = isFrozen ? 0f : normalSpeed;
-        }
+            if (isFrozen) globalClock.localTimeScale = forwardSpeed;
+        };
+        controls.Player.Forward.canceled += ctx =>
+        {
+            if (isFrozen) globalClock.localTimeScale = 0f;
+        };
     }
+
+    void OnEnable() => controls.Enable();
+    void OnDisable() => controls.Disable();
 }
