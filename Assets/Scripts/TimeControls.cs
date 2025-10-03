@@ -1,19 +1,31 @@
-using UnityEngine;
 using Chronos;
+using UnityEngine;
 
 public class TimeControls : MonoBehaviour
 {
-    public Clock globalClock;
+    public static TimeControls Instance { get; private set; }
 
-    public float rewindSpeed = -1f;
-    public float forwardSpeed = 2f;
+    public Clock globalClock;
+    public CloneManager cloneManager;
     public float normalSpeed = 1f;
+    public float rewindSpeed = -3f;
+    public float forwardSpeed = 3f;
+
+    private PlayerControls controls;
 
     public bool isFrozen = false;
-    private PlayerControls controls;
+    public bool isRewinding { get; private set; }
+    public bool isForwarding { get; private set; }
 
     void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         controls = new PlayerControls();
 
         // Freeze toggle
@@ -22,29 +34,52 @@ public class TimeControls : MonoBehaviour
             isFrozen = !isFrozen;
             globalClock.localTimeScale = isFrozen ? 0f : normalSpeed;
             Debug.Log(isFrozen ? "¡Congelado!" : "¡Descongelado!");
+
+            if (isFrozen && cloneManager != null)
+            {
+                // spawn del clon en la posición actual
+                cloneManager.SpawnClone();
+            }
         };
 
         // Rewind
         controls.Player.Rewind.performed += ctx =>
         {
-            if (isFrozen) globalClock.localTimeScale = rewindSpeed;
+            if (isFrozen)
+            {
+                isRewinding = true;
+                globalClock.localTimeScale = rewindSpeed;
+            }
         };
         controls.Player.Rewind.canceled += ctx =>
         {
-            if (isFrozen) globalClock.localTimeScale = 0f;
+            if (isFrozen)
+            {
+                isRewinding = false;
+                globalClock.localTimeScale = 0f;
+            }
         };
 
         // Forward
         controls.Player.Forward.performed += ctx =>
         {
-            if (isFrozen) globalClock.localTimeScale = forwardSpeed;
+            if (isFrozen)
+            {
+                isForwarding = true;
+                globalClock.localTimeScale = forwardSpeed;
+            }
         };
         controls.Player.Forward.canceled += ctx =>
         {
-            if (isFrozen) globalClock.localTimeScale = 0f;
+            if (isFrozen)
+            {
+                isForwarding = false;
+                globalClock.localTimeScale = 0f;
+            }
         };
     }
 
     void OnEnable() => controls.Enable();
     void OnDisable() => controls.Disable();
 }
+

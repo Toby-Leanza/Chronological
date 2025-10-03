@@ -1,7 +1,7 @@
 using UnityEngine;
 using Chronos;
 
-public class TimeAffectedObject : MonoBehaviour
+public class TimeObject : MonoBehaviour
 {
     private Timeline timeline;
 

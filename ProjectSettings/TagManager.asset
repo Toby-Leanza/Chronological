@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Floor
   - Pickup
+  - Clone
   layers:
   - Default
   - TransparentFX
@@ -13,8 +14,8 @@ TagManager:
   - Pickup
   - Water
   - UI
-  - 
-  - 
+  - Clones
+  - Floor
   - 
   - 
   - 
