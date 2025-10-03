@@ -8,10 +8,12 @@ public class PlayerRecorder : MonoBehaviour
 
     void Update()
     {
-        if (record)
-        {
-            recordedFrames.Add(new PlayerFrameData(transform.position, transform.rotation));
-        }
+        if (!record) return;
+
+        // No grabar si el tiempo está congelado
+        if (TimeControls.Instance != null && TimeControls.Instance.isFrozen) return;
+
+        recordedFrames.Add(new PlayerFrameData(transform.position, transform.rotation));
     }
 
     public List<PlayerFrameData> GetRecordedFrames()
@@ -21,7 +23,9 @@ public class PlayerRecorder : MonoBehaviour
 
     public PlayerFrameData GetLastFrame()
     {
-        if (recordedFrames.Count == 0) return new PlayerFrameData(transform.position, transform.rotation);
+        if (recordedFrames.Count == 0)
+            return new PlayerFrameData(transform.position, transform.rotation);
+
         return recordedFrames[recordedFrames.Count - 1];
     }
 }
