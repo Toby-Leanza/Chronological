@@ -9,7 +9,7 @@ public class TimeControls : MonoBehaviour
     public float forwardSpeed = 2f;
     public float normalSpeed = 1f;
 
-    private bool isFrozen = false;
+    public bool isFrozen = false;
     private PlayerControls controls;
 
     void Awake()

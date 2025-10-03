@@ -18,6 +18,8 @@ public class PlayerMovement : MonoBehaviour
     private bool isGrounded;
     private float xRotation = 0f;
 
+    public TimeControls timeControls;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -80,6 +82,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
+        if (timeControls != null && timeControls.isFrozen) return;
+
         if (playerCamera != null)
         {
             Vector3 forward = playerCamera.transform.forward;
@@ -100,6 +104,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleJump()
     {
+        if (timeControls != null && timeControls.isFrozen) return;
+
         if (jumpPressed)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
