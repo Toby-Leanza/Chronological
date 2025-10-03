@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 
 public class CloneController : MonoBehaviour
@@ -48,15 +49,9 @@ public class CloneController : MonoBehaviour
         }
     }
 
-    void LateUpdate()
+    void OnTriggerEnter(Collider other)
     {
-        if (!TimeControls.Instance.isFrozen && playerTransform != null)
-        {
-            float distance = Vector3.Distance(transform.position, playerTransform.position);
-            if (distance < 2.5f)
-            {
-                Destroy(gameObject);
-            }
-        }
+        if (other.CompareTag("Player") && !TimeControls.Instance.isFrozen)
+            Destroy(gameObject);
     }
 }

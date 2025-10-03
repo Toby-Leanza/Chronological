@@ -3,70 +3,74 @@ using UnityEngine.InputSystem;
 
 public class PlayerPickup : MonoBehaviour
 {
-    public float pickupRange = 3f; // Distancia m·xima para agarrar
-    public Transform holdPoint;    // Punto donde se sujetan objetos
-    public float throwForce = 5f;  // Fuerza para lanzar
-    public Transform cameraTransform; // Referencia a la c·mara
+    public float pickupRange = 3f;
+    public Transform holdPoint;
+    public float throwForce = 5f;
+    public Transform cameraTransform;
+    public float followSpeed = 20f; // mayor velocidad
 
-    private GameObject heldObject;
     private Rigidbody heldRb;
 
     public void OnInteract(InputAction.CallbackContext context)
     {
-        if (context.performed)
+        if (!context.performed) return;
+
+        if (heldRb == null)
         {
-            if (heldObject == null)
-            {
-                TryPickup();
-            }
-            else
-            {
-                Drop();
-            }
+            TryPickup();
+        }
+        else
+        {
+            Drop();
         }
     }
 
     void TryPickup()
     {
-        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward); // Usar la c·mara
+        Ray ray = new Ray(cameraTransform.position, cameraTransform.forward);
         Debug.DrawRay(cameraTransform.position, cameraTransform.forward * pickupRange, Color.red, 2f);
-        if (Physics.Raycast(ray, out RaycastHit hit, pickupRange))
-        {
-            if (hit.collider.CompareTag("Pickup"))
-            {
-                Debug.Log("Objeto encontrado: " + hit.collider.gameObject.name);
-                heldObject = hit.collider.gameObject;
-                heldRb = heldObject.GetComponent<Rigidbody>();
 
-                if (heldRb == null)
-                {
-                    Debug.LogError("El objeto no tiene Rigidbody");
-                    heldObject = null;
-                    return;
-                }
-
-                heldObject.transform.position = holdPoint.position;
-                heldObject.transform.SetParent(holdPoint);
-                heldRb.isKinematic = true;
-            }
-            else
-            {
-                Debug.Log("Objeto no tiene la etiqueta Pickup: " + hit.collider.tag);
-            }
-        }
-        else
+        if (Physics.Raycast(ray, out RaycastHit hit, pickupRange) && hit.collider.CompareTag("Pickup"))
         {
-            Debug.Log("No se detectÛ nada en el rango del raycast");
+            heldRb = hit.collider.GetComponent<Rigidbody>();
+            if (heldRb == null)
+            {
+                Debug.LogError("El objeto no tiene Rigidbody");
+                return;
+            }
+
+            heldRb.useGravity = false;
+            heldRb.constraints = RigidbodyConstraints.FreezeRotation;
         }
     }
 
     void Drop()
     {
-        heldObject.transform.SetParent(null);
-        heldRb.isKinematic = false;
+        if (heldRb == null) return;
 
-        heldRb.AddForce(cameraTransform.forward * throwForce, ForceMode.Impulse); // Usar cameraTransform.forward
-        heldObject = null;
+        heldRb.useGravity = true;
+        heldRb.constraints = RigidbodyConstraints.None;
+        heldRb.AddForce(cameraTransform.forward * throwForce, ForceMode.Impulse);
         heldRb = null;
     }
+
+    void FixedUpdate()
+    {
+        if (TimeControls.Instance.isFrozen)
+        {
+            Drop();
+        }
+        else if (heldRb != null)
+        {
+            Vector3 targetPos = holdPoint.position;
+            Vector3 moveDir = targetPos - heldRb.position;
+
+            // Mover usando Rigidbody y suavizado
+            heldRb.linearVelocity = moveDir / Time.fixedDeltaTime;
+
+            // Rotaci√≥n igual a la c√°mara
+            heldRb.rotation = cameraTransform.rotation;
+        }
+    }
+
 }

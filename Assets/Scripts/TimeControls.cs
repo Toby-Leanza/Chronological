@@ -33,7 +33,7 @@ public class TimeControls : MonoBehaviour
         {
             isFrozen = !isFrozen;
             globalClock.localTimeScale = isFrozen ? 0f : normalSpeed;
-            Debug.Log(isFrozen ? "¡Congelado!" : "¡Descongelado!");
+            Debug.Log(isFrozen ? "Congelado" : "Descongelado");
 
             if (isFrozen && cloneManager != null)
             {
