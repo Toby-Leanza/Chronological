@@ -12,6 +12,9 @@ public class PlayerMovement : MonoBehaviour
     public Transform cameraHolder; // Referencia al CameraHolder
     public Camera playerCamera;    // Referencia a la Main Camera
 
+    [Header("Camera Advanced")]
+    public float deadZone = 0.001f; // Zona muerta para evitar drift
+
     private Rigidbody rb;
     private Vector2 moveInput;
     private bool jumpPressed;
@@ -62,8 +65,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMouseLook()
     {
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.unscaledDeltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.unscaledDeltaTime;
+        // Obtener input del mouse
+        float mouseX = Input.GetAxis("Mouse X");
+        float mouseY = Input.GetAxis("Mouse Y");
+
+        // SOLUCIÓN 1: Aplicar dead zone para evitar drift
+        if (Mathf.Abs(mouseX) < deadZone) mouseX = 0f;
+        if (Mathf.Abs(mouseY) < deadZone) mouseY = 0f;
+
+        // SOLUCIÓN 2: Usar Time.deltaTime en lugar de unscaledDeltaTime
+        // y reducir la sensibilidad recomendada
+        mouseX *= mouseSensitivity * Time.deltaTime;
+        mouseY *= mouseSensitivity * Time.deltaTime;
 
         // Rotación vertical solo en el CameraHolder
         xRotation -= mouseY;
