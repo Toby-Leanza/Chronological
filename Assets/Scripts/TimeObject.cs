@@ -12,6 +12,6 @@ public class TimeObject : MonoBehaviour
 
     void Update()
     {
-        transform.Translate(Vector3.forward * Timekeeper.instance.Clock("Root").deltaTime);
+        transform.Translate(Vector3.forward * Timekeeper.instance.Clock("World").deltaTime);
     }
 }
