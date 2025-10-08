@@ -44,7 +44,7 @@ public class CloneController : MonoBehaviour
             // Se detiene cuando llega al frame 0
             if (frameIndex > 0)
             {
-                frameIndex++;
+                frameIndex--;
                 transform.position = playerRecorder.recordedFrames[frameIndex].position;
                 transform.rotation = playerRecorder.recordedFrames[frameIndex].rotation;
             }

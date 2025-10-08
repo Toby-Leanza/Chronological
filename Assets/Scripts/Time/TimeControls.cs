@@ -37,7 +37,6 @@ public class TimeControls : MonoBehaviour
 
             if (isFrozen && cloneManager != null)
             {
-                // spawn del clon en la posición actual
                 cloneManager.SpawnClone();
             }
         };
