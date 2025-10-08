@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CloneController : MonoBehaviour
@@ -7,20 +6,19 @@ public class CloneController : MonoBehaviour
     [HideInInspector] public PlayerMovement playerMovement;
     [HideInInspector] public Transform playerTransform;
     public float moveSpeed;
+    public float destroyDistance = 5f;
+
     private int frameIndex;
 
     void Start()
     {
         if (playerMovement != null)
-        {
             moveSpeed = playerMovement.speed;
-        }
 
         if (playerRecorder != null && playerRecorder.recordedFrames.Count > 0)
         {
             frameIndex = playerRecorder.recordedFrames.Count - 1;
-            transform.position = playerRecorder.recordedFrames[frameIndex].position;
-            transform.rotation = playerRecorder.recordedFrames[frameIndex].rotation;
+            ApplyFrame(frameIndex);
         }
     }
 
@@ -31,27 +29,36 @@ public class CloneController : MonoBehaviour
         if (TimeControls.Instance.isFrozen)
         {
             if (TimeControls.Instance.isRewinding)
-                frameIndex = Mathf.Max(0, frameIndex - 1);
+                frameIndex--;
             else if (TimeControls.Instance.isForwarding)
-                frameIndex = Mathf.Min(playerRecorder.recordedFrames.Count - 1, frameIndex + 1);
+                frameIndex++;
 
-            transform.position = playerRecorder.recordedFrames[frameIndex].position;
-            transform.rotation = playerRecorder.recordedFrames[frameIndex].rotation;
+            frameIndex = Mathf.Clamp(frameIndex, 0, playerRecorder.recordedFrames.Count - 1);
+            ApplyFrame(frameIndex);
         }
         else
         {
-            if (frameIndex > 0)
+            if (frameIndex < playerRecorder.recordedFrames.Count - 1)
             {
                 frameIndex++;
-                transform.position = playerRecorder.recordedFrames[frameIndex].position;
-                transform.rotation = playerRecorder.recordedFrames[frameIndex].rotation;
+                ApplyFrame(frameIndex);
+            }
+
+            if (playerTransform != null)
+            {
+                float distance = Vector3.Distance(transform.position, playerTransform.position);
+                if (distance <= destroyDistance)
+                {
+                    Destroy(gameObject);
+                    return;
+                }
             }
         }
     }
 
-    void OnTriggerEnter(Collider other)
+    private void ApplyFrame(int index)
     {
-        if (other.CompareTag("Player") && !TimeControls.Instance.isFrozen)
-            Destroy(gameObject);
+        transform.position = playerRecorder.recordedFrames[index].position;
+        transform.rotation = playerRecorder.recordedFrames[index].rotation;
     }
 }

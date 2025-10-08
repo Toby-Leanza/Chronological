@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement Settings")]
     public float speed = 8f;
     public float jumpForce = 10f;
+    private float gravityMultiplier = 2.5f;
 
     [Header("Camera Settings")]
     public float mouseSensitivity = 100f;
@@ -31,7 +32,7 @@ public class PlayerMovement : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // Buscar automáticamente si no está asignado
+        // Buscar automï¿½ticamente si no estï¿½ asignado
         if (cameraHolder == null)
         {
             cameraHolder = transform.Find("CameraHolder");
@@ -69,21 +70,21 @@ public class PlayerMovement : MonoBehaviour
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
 
-        // SOLUCIÓN 1: Aplicar dead zone para evitar drift
+        // SOLUCIï¿½N 1: Aplicar dead zone para evitar drift
         if (Mathf.Abs(mouseX) < deadZone) mouseX = 0f;
         if (Mathf.Abs(mouseY) < deadZone) mouseY = 0f;
 
-        // SOLUCIÓN 2: Usar Time.deltaTime en lugar de unscaledDeltaTime
+        // SOLUCIï¿½N 2: Usar Time.deltaTime en lugar de unscaledDeltaTime
         // y reducir la sensibilidad recomendada
         mouseX *= mouseSensitivity * Time.deltaTime;
         mouseY *= mouseSensitivity * Time.deltaTime;
 
-        // Rotación vertical solo en el CameraHolder
+        // Rotaciï¿½n vertical solo en el CameraHolder
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
         cameraHolder.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
-        // Rotación horizontal solo en el jugador
+        // Rotaciï¿½n horizontal solo en el jugador
         transform.Rotate(Vector3.up * mouseX);
     }
 
@@ -121,9 +122,16 @@ public class PlayerMovement : MonoBehaviour
 
         if (jumpPressed)
         {
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z); // reinicia velocidad vertical
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             jumpPressed = false;
             isGrounded = false;
+        }
+
+        // Aplicar gravedad extra manualmente
+        if (!isGrounded)
+        {
+            rb.AddForce(Physics.gravity * (gravityMultiplier - 1f), ForceMode.Acceleration);
         }
     }
 
@@ -161,7 +169,7 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    // Método para cambiar sensibilidad desde otros scripts
+    // Mï¿½todo para cambiar sensibilidad desde otros scripts
     public void SetMouseSensitivity(float newSensitivity)
     {
         mouseSensitivity = newSensitivity;
