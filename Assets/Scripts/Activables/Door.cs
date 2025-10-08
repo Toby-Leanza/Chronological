@@ -1,13 +1,7 @@
-using UnityEngine;
-
 public class Door : Activable
 {
-    private bool isActive = true;
-
-    public override void SetActiveState(bool active)
+    public override void SetActiveState(bool state)
     {
-        if (isActive == active) return;
-        isActive = active;
-        gameObject.SetActive(active);
+        gameObject.SetActive(!state);
     }
 }

@@ -40,11 +40,9 @@ public class CloneController : MonoBehaviour
         }
         else
         {
-            // El clon solo se mueve hacia atrás en el tiempo cuando está descongelado
-            // Se detiene cuando llega al frame 0
             if (frameIndex > 0)
             {
-                frameIndex--;
+                frameIndex++;
                 transform.position = playerRecorder.recordedFrames[frameIndex].position;
                 transform.rotation = playerRecorder.recordedFrames[frameIndex].rotation;
             }
