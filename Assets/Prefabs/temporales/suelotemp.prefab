@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 404355627780985393}
   - component: {fileID: 3291385688267045367}
   m_Layer: 0
-  m_Name: Plane (98)
+  m_Name: suelotemp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
