@@ -16,7 +16,6 @@ public class PlayerRecorder : MonoBehaviour
     {
         playerMovement = GetComponent<PlayerMovement>();
 
-        // Configurar inputs
         playerControls = new PlayerControls();
         playerControls.Player.Move.performed += ctx => currentMoveInput = ctx.ReadValue<Vector2>();
         playerControls.Player.Move.canceled += ctx => currentMoveInput = Vector2.zero;
@@ -32,7 +31,6 @@ public class PlayerRecorder : MonoBehaviour
         // No grabar si el tiempo está congelado
         if (TimeControls.Instance != null && TimeControls.Instance.isFrozen) return;
 
-        // Grabar frame con inputs actuales
         recordedFrames.Add(new PlayerFrameData(
             transform.position,
             transform.rotation,
@@ -40,22 +38,12 @@ public class PlayerRecorder : MonoBehaviour
             currentJumpPressed
         ));
 
-        // Resetear el salto después de grabarlo (es un input momentáneo)
-        if (currentJumpPressed)
-        {
-            currentJumpPressed = false;
-        }
+        if (currentJumpPressed) currentJumpPressed = false;
     }
 
-    void OnDestroy()
-    {
-        playerControls?.Disable();
-    }
+    void OnDestroy() => playerControls?.Disable();
 
-    public List<PlayerFrameData> GetRecordedFrames()
-    {
-        return recordedFrames;
-    }
+    public List<PlayerFrameData> GetRecordedFrames() => recordedFrames;
 
     public PlayerFrameData GetLastFrame()
     {

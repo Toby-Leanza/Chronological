@@ -5,7 +5,7 @@ public class CloneController : MonoBehaviour
     [HideInInspector] public PlayerRecorder playerRecorder;
     [HideInInspector] public PlayerMovement playerMovement;
     [HideInInspector] public Transform playerTransform;
-    public float moveSpeed;
+    public float moveSpeed = 8f;
     public float destroyDistance = 5f;
 
     private int frameIndex;
@@ -15,24 +15,15 @@ public class CloneController : MonoBehaviour
     private bool isGrounded;
     private float gravityMultiplier = 2.5f;
 
-    // Nuevas variables para control de tiempo
-    private bool isUsingPhysics = false;
-    private float rewindCooldown = 0f;
-
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
 
-        if (playerMovement != null)
-        {
-            moveSpeed = playerMovement.speed;
-            gravityMultiplier = 2.5f;
-        }
-
+        // Inicializamos en el último frame grabado si hay alguno
         if (playerRecorder != null && playerRecorder.recordedFrames.Count > 0)
         {
-            frameIndex = playerRecorder.recordedFrames.Count - 1; // Empezar desde el último frame
+            frameIndex = playerRecorder.recordedFrames.Count - 1;
             ApplyFrame(frameIndex);
         }
     }
@@ -41,113 +32,95 @@ public class CloneController : MonoBehaviour
     {
         if (playerRecorder == null || playerRecorder.recordedFrames.Count == 0) return;
 
-        // Control de tiempo congelado (rewind/forward)
-        if (TimeControls.Instance.isFrozen)
-        {
-            isUsingPhysics = false;
-
-            // Rebobinado
-            if (TimeControls.Instance.isRewinding)
-            {
-                frameIndex--;
-                frameIndex = Mathf.Clamp(frameIndex, 0, playerRecorder.recordedFrames.Count - 1);
-                ApplyFrame(frameIndex);
-            }
-            // Avance rápido
-            else if (TimeControls.Instance.isForwarding)
-            {
-                frameIndex++;
-                frameIndex = Mathf.Clamp(frameIndex, 0, playerRecorder.recordedFrames.Count - 1);
-                ApplyFrame(frameIndex);
-            }
-        }
-        else
-        {
-            // Tiempo normal - usar física para movimiento suave
-            if (!isUsingPhysics)
-            {
-                isUsingPhysics = true;
-                // Posicionar en el frame correcto al salir del tiempo congelado
-                if (frameIndex < playerRecorder.recordedFrames.Count)
-                {
-                    ApplyFrameWithInputs(frameIndex);
-                }
-            }
-
-            // Avanzar en la grabación durante tiempo normal
-            if (frameIndex < playerRecorder.recordedFrames.Count - 1)
-            {
-                frameIndex++;
-                ApplyFrameWithInputs(frameIndex);
-            }
-        }
-
-        // Destruir si está cerca del jugador
+        // Cada frame verificamos si se debe destruir por cercanía al jugador
         if (playerTransform != null)
         {
             float distance = Vector3.Distance(transform.position, playerTransform.position);
-            if (distance <= destroyDistance)
+            if (!TimeControls.Instance.isFrozen && distance <= destroyDistance)
             {
                 Destroy(gameObject);
                 return;
             }
         }
+
+        // Control de tiempo congelado
+        if (TimeControls.Instance.isFrozen)
+        {
+            // Rewind
+            if (TimeControls.Instance.isRewinding)
+            {
+                frameIndex--;
+                frameIndex = Mathf.Clamp(frameIndex, 0, playerRecorder.recordedFrames.Count - 1);
+                ApplyFrameWithInput(frameIndex, invert: true);
+            }
+            // Forward
+            else if (TimeControls.Instance.isForwarding)
+            {
+                frameIndex++;
+                frameIndex = Mathf.Clamp(frameIndex, 0, playerRecorder.recordedFrames.Count - 1);
+                ApplyFrameWithInput(frameIndex, invert: false);
+            }
+        }
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
-        // Solo usar física cuando NO está congelado el tiempo
-        if (!TimeControls.Instance.isFrozen && isUsingPhysics)
+        // Solo usar física cuando el tiempo no está congelado
+        if (!TimeControls.Instance.isFrozen)
         {
-            HandleMovement();
-            HandleJump();
-            HandleGravity();
+            if (frameIndex < playerRecorder.recordedFrames.Count)
+            {
+                ApplyFrameWithInput(frameIndex, invert: false);
+                HandleMovement();
+                HandleJump();
+                HandleGravity();
+                frameIndex++;
+            }
         }
     }
 
     private void ApplyFrame(int index)
     {
-        if (index >= 0 && index < playerRecorder.recordedFrames.Count)
-        {
-            PlayerFrameData frame = playerRecorder.recordedFrames[index];
-            transform.position = frame.position;
-            transform.rotation = frame.rotation;
-        }
+        if (index < 0 || index >= playerRecorder.recordedFrames.Count) return;
+
+        PlayerFrameData frame = playerRecorder.recordedFrames[index];
+        transform.position = frame.position;
+        transform.rotation = frame.rotation;
     }
 
-    private void ApplyFrameWithInputs(int index)
+    private void ApplyFrameWithInput(int index, bool invert)
     {
-        if (index >= 0 && index < playerRecorder.recordedFrames.Count)
+        if (index < 0 || index >= playerRecorder.recordedFrames.Count) return;
+
+        PlayerFrameData frame = playerRecorder.recordedFrames[index];
+        transform.rotation = frame.rotation;
+
+        // Capturar inputs
+        currentMoveInput = invert ? -frame.moveInput : frame.moveInput;
+        currentJumpPressed = frame.jumpPressed && !invert;
+
+        // Mover el transform directamente mientras está congelado
+        if (TimeControls.Instance.isFrozen)
         {
-            PlayerFrameData frame = playerRecorder.recordedFrames[index];
+            Vector3 direction = new Vector3(currentMoveInput.x, 0f, currentMoveInput.y).normalized;
+            transform.position += transform.TransformDirection(direction) * moveSpeed * Time.fixedDeltaTime;
 
-            // Aplicar posición y rotación
-            transform.position = frame.position;
-            transform.rotation = frame.rotation;
-
-            // Capturar inputs para usar en FixedUpdate
-            currentMoveInput = frame.moveInput;
-            currentJumpPressed = frame.jumpPressed;
+            if (currentJumpPressed)
+            {
+                transform.position += Vector3.up * (playerMovement?.jumpForce ?? 10f) * Time.fixedDeltaTime;
+            }
         }
     }
 
     private void HandleMovement()
     {
-        if (currentMoveInput.magnitude > 0.1f)
+        if (currentMoveInput.magnitude > 0.01f)
         {
             Vector3 direction = new Vector3(currentMoveInput.x, 0f, currentMoveInput.y).normalized;
-            Vector3 worldDirection = transform.TransformDirection(direction);
-
-            Vector3 desiredVelocity = worldDirection * moveSpeed;
-            Vector3 currentVelocity = rb.linearVelocity;
-
-            Vector3 velocityChange = new Vector3(
-                desiredVelocity.x - currentVelocity.x,
-                0f,
-                desiredVelocity.z - currentVelocity.z
-            );
-
-            rb.linearVelocity += velocityChange * Time.fixedDeltaTime;
+            Vector3 worldDir = transform.TransformDirection(direction);
+            Vector3 desiredVel = worldDir * moveSpeed;
+            Vector3 velChange = new Vector3(desiredVel.x - rb.linearVelocity.x, 0f, desiredVel.z - rb.linearVelocity.z);
+            rb.linearVelocity += velChange;
         }
     }
 
@@ -165,9 +138,7 @@ public class CloneController : MonoBehaviour
     private void HandleGravity()
     {
         if (!isGrounded)
-        {
             rb.AddForce(Physics.gravity * (gravityMultiplier - 1f), ForceMode.Acceleration);
-        }
     }
 
     private void OnCollisionEnter(Collision collision)

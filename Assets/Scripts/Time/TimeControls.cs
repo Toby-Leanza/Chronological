@@ -28,7 +28,6 @@ public class TimeControls : MonoBehaviour
 
         controls = new PlayerControls();
 
-        // Freeze toggle
         controls.Player.Freeze.performed += ctx =>
         {
             isFrozen = !isFrozen;
@@ -41,7 +40,6 @@ public class TimeControls : MonoBehaviour
             }
         };
 
-        // Rewind
         controls.Player.Rewind.performed += ctx =>
         {
             if (isFrozen)
@@ -59,7 +57,6 @@ public class TimeControls : MonoBehaviour
             }
         };
 
-        // Forward
         controls.Player.Forward.performed += ctx =>
         {
             if (isFrozen)
@@ -81,4 +78,3 @@ public class TimeControls : MonoBehaviour
     void OnEnable() => controls.Enable();
     void OnDisable() => controls.Disable();
 }
-

@@ -7,7 +7,7 @@ public class CloneManager : MonoBehaviour
     public GameObject clonePrefab;
     public PlayerRecorder playerRecorder;
     public Transform player;
-    public PlayerMovement playerMovement; // Nueva referencia
+    public PlayerMovement playerMovement;
 
     [Header("Clone Limit")]
     public int maxClones = 3;
@@ -17,7 +17,6 @@ public class CloneManager : MonoBehaviour
 
     void Start()
     {
-        // Obtener referencia al PlayerMovement si no está asignada
         if (playerMovement == null && player != null)
             playerMovement = player.GetComponent<PlayerMovement>();
     }
@@ -26,10 +25,7 @@ public class CloneManager : MonoBehaviour
     {
         if (playerRecorder == null) return;
 
-        if (clones.Count >= maxClones)
-        {
-            DestroyOldestClone();
-        }
+        if (clones.Count >= maxClones) DestroyOldestClone();
 
         PlayerFrameData lastFrame = playerRecorder.GetLastFrame();
         GameObject cloneObj = Instantiate(clonePrefab, lastFrame.position, lastFrame.rotation);
@@ -39,12 +35,11 @@ public class CloneManager : MonoBehaviour
         {
             cloneCtrl.playerRecorder = playerRecorder;
             cloneCtrl.playerTransform = player;
-            cloneCtrl.playerMovement = playerMovement; // Pasar referencia
+            cloneCtrl.playerMovement = playerMovement;
             clones.Add(cloneCtrl);
         }
     }
 
-    // ... resto del código sin cambios
     private void DestroyOldestClone()
     {
         if (clones.Count > 0)
@@ -52,9 +47,9 @@ public class CloneManager : MonoBehaviour
             clones.RemoveAll(c => c == null);
             if (clones.Count > 0)
             {
-                CloneController oldestClone = clones[0];
+                CloneController oldest = clones[0];
                 clones.RemoveAt(0);
-                Destroy(oldestClone.gameObject);
+                Destroy(oldest.gameObject);
             }
         }
     }
@@ -62,10 +57,8 @@ public class CloneManager : MonoBehaviour
     public void DestroyAllClones()
     {
         for (int i = clones.Count - 1; i >= 0; i--)
-        {
-            if (clones[i] != null)
-                Destroy(clones[i].gameObject);
-        }
+            if (clones[i] != null) Destroy(clones[i].gameObject);
+
         clones.Clear();
     }
 
@@ -81,8 +74,5 @@ public class CloneManager : MonoBehaviour
         return clones.Count < maxClones;
     }
 
-    private void Update()
-    {
-        clones.RemoveAll(c => c == null);
-    }
+    private void Update() => clones.RemoveAll(c => c == null);
 }
