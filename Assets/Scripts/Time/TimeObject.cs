@@ -21,10 +21,10 @@ public class TimeObject : MonoBehaviour
         if (TimeControls.Instance.isFrozen)
             return;
 
-        // Si está rebobinando
+        // Si estÃ¡ rebobinando
         if (TimeControls.Instance.isRewinding)
         {
-            // Chequea si ya llegó a su posición inicial
+            // Chequea si ya llegÃ³ a su posiciÃ³n inicial
             if (Vector3.Distance(transform.position, initialPosition) > 0.01f)
             {
                 transform.Translate(Vector3.forward * clock.deltaTime);

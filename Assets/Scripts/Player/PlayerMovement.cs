@@ -45,8 +45,12 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
+        Debug.Log($"Jump pressed: {context.performed}, Grounded: {isGrounded}");
         if (context.performed && isGrounded)
+        {
             jumpPressed = true;
+            Debug.Log("JUMP ACTIVADO!");
+        }
     }
 
     private void Update()
@@ -108,12 +112,17 @@ public class PlayerMovement : MonoBehaviour
     {
         if (timeControls != null && timeControls.isFrozen) return;
 
-        if (jumpPressed)
+        if (jumpPressed && isGrounded)  // Aquí se verifica isGrounded
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             jumpPressed = false;
             isGrounded = false;
+        }
+        else if (jumpPressed)
+        {
+            // Si se presionó salto pero no está en el suelo, resetear
+            jumpPressed = false;
         }
 
         if (!isGrounded)
