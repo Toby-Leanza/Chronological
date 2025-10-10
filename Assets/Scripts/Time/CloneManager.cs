@@ -23,48 +23,60 @@ public class CloneManager : MonoBehaviour
 
     public void SpawnClone()
     {
-        if (playerRecorder == null || player == null) return;
+        if (playerRecorder == null) return;
 
         if (clones.Count >= maxClones)
-        {
             DestroyOldestClone();
-        }
 
-        GameObject cloneObj = Instantiate(clonePrefab, player.position, player.rotation);
+        Vector3 spawnPos = player != null ? player.position : Vector3.zero;
+        Quaternion spawnRot = player != null ? player.rotation : Quaternion.identity;
+
+        GameObject cloneObj = Instantiate(clonePrefab, spawnPos, spawnRot);
         CloneController cloneCtrl = cloneObj.GetComponent<CloneController>();
 
         if (cloneCtrl != null)
         {
             cloneCtrl.playerRecorder = playerRecorder;
-            cloneCtrl.playerMovement = playerMovement;
             cloneCtrl.playerTransform = player;
-            cloneCtrl.SetInitialState();
+            cloneCtrl.playerMovement = playerMovement;
             clones.Add(cloneCtrl);
         }
     }
+
 
     private void DestroyOldestClone()
     {
         if (clones.Count > 0)
         {
-            CloneController oldest = clones[0];
-            clones.RemoveAt(0);
-            Destroy(oldest.gameObject);
+            clones.RemoveAll(c => c == null);
+            if (clones.Count > 0)
+            {
+                CloneController oldest = clones[0];
+                clones.RemoveAt(0);
+                Destroy(oldest.gameObject);
+            }
         }
     }
 
     public void DestroyAllClones()
     {
-        foreach (var clone in clones)
-        {
-            if (clone != null)
-                Destroy(clone.gameObject);
-        }
+        for (int i = clones.Count - 1; i >= 0; i--)
+            if (clones[i] != null) Destroy(clones[i].gameObject);
+
         clones.Clear();
     }
 
-    void Update()
+    public int GetActiveCloneCount()
     {
         clones.RemoveAll(c => c == null);
+        return clones.Count;
     }
+
+    public bool CanSpawnClone()
+    {
+        clones.RemoveAll(c => c == null);
+        return clones.Count < maxClones;
+    }
+
+    private void Update() => clones.RemoveAll(c => c == null);
 }

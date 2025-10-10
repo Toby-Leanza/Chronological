@@ -1,168 +1,134 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(Collider))]
+[RequireComponent(typeof(Rigidbody), typeof(Collider))]
 public class CloneController : MonoBehaviour
 {
     [HideInInspector] public PlayerRecorder playerRecorder;
     [HideInInspector] public PlayerMovement playerMovement;
     [HideInInspector] public Transform playerTransform;
 
-    private Rigidbody rb;
-    private Collider col;
+    public float destroyDistance = 5f;
 
     private int frameIndex;
     private Vector2 currentMoveInput;
     private bool currentJumpPressed;
+    private Rigidbody rb;
+    private Collider col;
     private bool isGrounded;
     private float gravityMultiplier = 2.5f;
     private float moveSpeed;
 
-    private bool usingPhysics = false;
-
-    void Awake()
+    void Start()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-
         rb.freezeRotation = true;
-        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-    }
 
-    public void SetInitialState()
-    {
-        // Inicializar velocidad igual al jugador
         if (playerMovement != null)
             moveSpeed = playerMovement.speed;
-
-        // Spawnear ignorando colisiones mientras congelado
-        Physics.IgnoreCollision(col, playerTransform.GetComponent<Collider>(), true);
-
-        frameIndex = playerRecorder != null ? playerRecorder.recordedFrames.Count - 1 : 0;
-        ApplyFrame(frameIndex);
     }
 
     void Update()
     {
-        if (playerRecorder == null || playerRecorder.recordedFrames.Count == 0) return;
+        if (playerRecorder == null) return;
 
-        var timeCtrl = TimeControls.Instance;
+        bool frozen = TimeControls.Instance.isFrozen;
+        bool rewinding = TimeControls.Instance.isRewinding;
+        bool forwarding = TimeControls.Instance.isForwarding;
 
-        if (timeCtrl.isFrozen)
+        if (frozen)
         {
-            // No usar física
-            usingPhysics = false;
+            // Seguir posiciÃ³n y rotaciÃ³n del jugador directamente
+            rb.linearVelocity = Vector3.zero;
+            rb.position = playerTransform.position;
+            rb.rotation = playerTransform.rotation;
 
-            // Ignorar colisiones con todo
-            foreach (var worldCol in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
-            {
-                Physics.IgnoreCollision(col, worldCol, true);
-            }
+            // No colisiona con nada
+            col.isTrigger = true;
 
-            // Rewind / Forward inputs
-            if (timeCtrl.isRewinding)
+            // Rewind / Forward afectan inputs internos del clon (para cuando se descongele)
+            if (rewinding)
             {
-                frameIndex--;
+                frameIndex = Mathf.Max(0, frameIndex - 1);
+                ApplyInputs(frameIndex, invertInput: true);
             }
-            else if (timeCtrl.isForwarding)
+            else if (forwarding)
             {
-                frameIndex++;
+                frameIndex = Mathf.Min(playerRecorder.recordedFrames.Count - 1, frameIndex + 1);
+                ApplyInputs(frameIndex);
             }
-            frameIndex = Mathf.Clamp(frameIndex, 0, playerRecorder.recordedFrames.Count - 1);
-            ApplyFrame(frameIndex);
         }
         else
         {
-            // Usar física
-            if (!usingPhysics)
+            col.isTrigger = false;
+
+            if (frameIndex < playerRecorder.recordedFrames.Count)
             {
-                usingPhysics = true;
-
-                // Reactivar colisiones con todo excepto jugador
-                foreach (var worldCol in Object.FindObjectsByType<Collider>(FindObjectsSortMode.None))
-                {
-                    if (worldCol != playerTransform.GetComponent<Collider>())
-                        Physics.IgnoreCollision(col, worldCol, false);
-                }
-
-                // Mantener ignorando al jugador
-                Physics.IgnoreCollision(col, playerTransform.GetComponent<Collider>(), true);
-
-                // Posicionar en el último frame correcto
-                ApplyFrameWithInputs(frameIndex);
-            }
-
-            // Avanzar frame
-            if (frameIndex < playerRecorder.recordedFrames.Count - 1)
-            {
+                ApplyInputs(frameIndex);
                 frameIndex++;
-                ApplyFrameWithInputs(frameIndex);
             }
+        }
 
-            // Destruir al tocar al jugador
-            if (Vector3.Distance(transform.position, playerTransform.position) < 0.5f)
+        // Destruir si toca al jugador
+        if (!frozen && playerTransform != null)
+        {
+            float distance = Vector3.Distance(transform.position, playerTransform.position);
+            if (distance <= destroyDistance)
             {
                 Destroy(gameObject);
+                return;
             }
         }
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
-        if (usingPhysics)
-        {
-            HandleMovement();
-            HandleJump();
-            HandleGravity();
-        }
+        if (TimeControls.Instance != null && TimeControls.Instance.isFrozen) return;
+
+        HandleMovement();
+        HandleJump();
+        HandleGravity();
     }
 
-    private void ApplyFrame(int index)
-    {
-        if (index < 0 || index >= playerRecorder.recordedFrames.Count) return;
-        PlayerFrameData frame = playerRecorder.recordedFrames[index];
-        transform.position = frame.position;
-        transform.rotation = frame.rotation;
-    }
-
-    private void ApplyFrameWithInputs(int index)
+    private void ApplyInputs(int index, bool invertInput = false)
     {
         if (index < 0 || index >= playerRecorder.recordedFrames.Count) return;
         PlayerFrameData frame = playerRecorder.recordedFrames[index];
 
-        transform.position = frame.position;
-        transform.rotation = frame.rotation;
+        currentMoveInput = invertInput ? -frame.moveInput : frame.moveInput;
+        currentJumpPressed = frame.jumpPressed && !invertInput;
 
-        currentMoveInput = frame.moveInput;
-        currentJumpPressed = frame.jumpPressed;
+        // RotaciÃ³n del clon igual a la grabada
+        rb.rotation = frame.rotation;
     }
 
     private void HandleMovement()
     {
-        if (currentMoveInput.magnitude < 0.1f) return;
+        if (currentMoveInput.magnitude < 0.01f) return;
 
-        Vector3 direction = new Vector3(currentMoveInput.x, 0, currentMoveInput.y).normalized;
-        Vector3 worldDir = transform.TransformDirection(direction);
-        Vector3 desiredVelocity = worldDir * moveSpeed;
+        Vector3 direction = new Vector3(currentMoveInput.x, 0f, currentMoveInput.y).normalized;
+        Vector3 worldDirection = transform.TransformDirection(direction);
 
+        Vector3 desiredVelocity = worldDirection * moveSpeed;
         Vector3 velocityChange = new Vector3(
             desiredVelocity.x - rb.linearVelocity.x,
-            0,
+            0f,
             desiredVelocity.z - rb.linearVelocity.z
         );
 
-        rb.linearVelocity += velocityChange * Time.fixedDeltaTime;
+        rb.linearVelocity += velocityChange;
     }
 
     private void HandleJump()
     {
         if (currentJumpPressed && isGrounded)
         {
+            float jumpForce = playerMovement?.jumpForce ?? 10f;
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-            rb.AddForce(Vector3.up * playerMovement.jumpForce, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
             isGrounded = false;
-            currentJumpPressed = false;
         }
+        currentJumpPressed = false;
     }
 
     private void HandleGravity()

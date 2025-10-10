@@ -32,7 +32,6 @@ public class PlayerRecorder : MonoBehaviour
         if (TimeControls.Instance != null && TimeControls.Instance.isFrozen) return;
 
         recordedFrames.Add(new PlayerFrameData(
-            transform.position,
             transform.rotation,
             currentMoveInput,
             currentJumpPressed
@@ -41,14 +40,10 @@ public class PlayerRecorder : MonoBehaviour
         if (currentJumpPressed) currentJumpPressed = false;
     }
 
-    void OnDestroy() => playerControls?.Disable();
-
-    public List<PlayerFrameData> GetRecordedFrames() => recordedFrames;
-
     public PlayerFrameData GetLastFrame()
     {
         if (recordedFrames.Count == 0)
-            return new PlayerFrameData(transform.position, transform.rotation, Vector2.zero, false);
+            return new PlayerFrameData(transform.rotation, Vector2.zero, false);
 
         return recordedFrames[recordedFrames.Count - 1];
     }
@@ -57,22 +52,12 @@ public class PlayerRecorder : MonoBehaviour
 [System.Serializable]
 public class PlayerFrameData
 {
-    public Vector3 position;
     public Quaternion rotation;
     public Vector2 moveInput;
     public bool jumpPressed;
 
-    public PlayerFrameData(Vector3 pos, Quaternion rot)
+    public PlayerFrameData(Quaternion rot, Vector2 input, bool jump)
     {
-        position = pos;
-        rotation = rot;
-        moveInput = Vector2.zero;
-        jumpPressed = false;
-    }
-
-    public PlayerFrameData(Vector3 pos, Quaternion rot, Vector2 input, bool jump)
-    {
-        position = pos;
         rotation = rot;
         moveInput = input;
         jumpPressed = jump;

@@ -40,17 +40,18 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnMove(InputAction.CallbackContext context)
     {
-        moveInput = context.ReadValue<Vector2>();
+        if (timeControls != null && timeControls.isFrozen)
+            moveInput = Vector2.zero;
+        else
+            moveInput = context.ReadValue<Vector2>();
     }
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        Debug.Log($"Jump pressed: {context.performed}, Grounded: {isGrounded}");
+        if (timeControls != null && timeControls.isFrozen) return;
+
         if (context.performed && isGrounded)
-        {
             jumpPressed = true;
-            Debug.Log("JUMP ACTIVADO!");
-        }
     }
 
     private void Update()

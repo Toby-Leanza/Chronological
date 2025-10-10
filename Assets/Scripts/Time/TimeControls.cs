@@ -34,10 +34,16 @@ public class TimeControls : MonoBehaviour
             globalClock.localTimeScale = isFrozen ? 0f : normalSpeed;
             Debug.Log(isFrozen ? "Congelado" : "Descongelado");
 
-            if (isFrozen && cloneManager != null)
+            var player = FindAnyObjectByType<PlayerMovement>();
+            if (player != null)
             {
-                cloneManager.SpawnClone();
+                var rb = player.GetComponent<Rigidbody>();
+                if (rb != null)
+                    rb.linearVelocity = Vector3.zero; // resetea velocidad
             }
+
+            if (isFrozen && cloneManager != null)
+                cloneManager.SpawnClone();
         };
 
         controls.Player.Rewind.performed += ctx =>
