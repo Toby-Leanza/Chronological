@@ -16,29 +16,29 @@ public class TimeObject : MonoBehaviour
 
     void Update()
     {
-        var clock = Timekeeper.instance.Clock("World");
-
         if (TimeControls.Instance.isFrozen)
             return;
 
-        // Si está rebobinando
+        var clock = Timekeeper.instance.Clock("World");
+
         if (TimeControls.Instance.isRewinding)
         {
-            // Chequea si ya llegó a su posición inicial
             if (Vector3.Distance(transform.position, initialPosition) > 0.01f)
             {
-                transform.Translate(Vector3.forward * clock.deltaTime);
+                // Usar AddForce en lugar de Translate
+                GetComponent<Rigidbody>().AddForce(Vector3.forward * clock.deltaTime * 10f);
             }
             else
             {
+                GetComponent<Rigidbody>().linearVelocity = Vector3.zero;
                 transform.position = initialPosition;
                 transform.rotation = initialRotation;
             }
         }
         else
         {
-            // Movimiento normal hacia adelante
-            transform.Translate(Vector3.forward * clock.deltaTime);
+            // Movimiento con física
+            GetComponent<Rigidbody>().AddForce(Vector3.forward * clock.deltaTime * 10f);
         }
     }
 }
