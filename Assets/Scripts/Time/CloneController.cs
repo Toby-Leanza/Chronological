@@ -78,9 +78,10 @@ public class CloneController : MonoBehaviour
         Vector3 direction = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
         Vector3 desiredVelocity = transform.TransformDirection(direction) * playerMovement.speed;
         Vector3 velocityChange = new Vector3(desiredVelocity.x - rb.linearVelocity.x, 0f, desiredVelocity.z - rb.linearVelocity.z);
+        Vector3 targetVelocity = transform.TransformDirection(new Vector3(moveInput.x, 0, moveInput.y)) * playerMovement.speed;
+        rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
         Quaternion targetRotation = rotation;
-        rb.MoveRotation(Quaternion.RotateTowards(rb.rotation, targetRotation, 360f * Time.deltaTime));
-        rb.linearVelocity += velocityChange;
+        rb.MoveRotation(rotation);
     }
 
     private void HandleJump(bool jumpPressed)
