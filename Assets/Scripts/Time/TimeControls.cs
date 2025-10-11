@@ -1,3 +1,4 @@
+using System;
 using Chronos;
 using UnityEngine;
 
@@ -10,6 +11,13 @@ public class TimeControls : MonoBehaviour
     public float normalSpeed = 1f;
     public float rewindSpeed = -3f;
     public float forwardSpeed = 3f;
+
+    public static event Action OnFreeze;
+    public static event Action OnUnfreeze;
+    public static event Action OnStartRewind;
+    public static event Action OnStopRewind;
+    public static event Action OnStartForward;
+    public static event Action OnStopForward;
 
     private PlayerControls controls;
 
@@ -31,6 +39,8 @@ public class TimeControls : MonoBehaviour
         controls.Player.Freeze.performed += ctx =>
         {
             isFrozen = !isFrozen;
+            if (isFrozen) OnFreeze?.Invoke();
+            else OnUnfreeze?.Invoke();
             globalClock.localTimeScale = isFrozen ? 0f : normalSpeed;
             Debug.Log(isFrozen ? "Congelado" : "Descongelado");
 
@@ -39,7 +49,7 @@ public class TimeControls : MonoBehaviour
             {
                 var rb = player.GetComponent<Rigidbody>();
                 if (rb != null)
-                    rb.linearVelocity = Vector3.zero; // resetea velocidad
+                    rb.linearVelocity = Vector3.zero;
             }
 
             if (isFrozen && cloneManager != null)
@@ -48,6 +58,7 @@ public class TimeControls : MonoBehaviour
 
         controls.Player.Rewind.performed += ctx =>
         {
+            OnStartRewind?.Invoke();
             if (isFrozen)
             {
                 isRewinding = true;
@@ -56,6 +67,7 @@ public class TimeControls : MonoBehaviour
         };
         controls.Player.Rewind.canceled += ctx =>
         {
+            OnStopRewind?.Invoke();
             if (isFrozen)
             {
                 isRewinding = false;
@@ -65,6 +77,7 @@ public class TimeControls : MonoBehaviour
 
         controls.Player.Forward.performed += ctx =>
         {
+            OnStartForward?.Invoke();
             if (isFrozen)
             {
                 isForwarding = true;
@@ -73,6 +86,7 @@ public class TimeControls : MonoBehaviour
         };
         controls.Player.Forward.canceled += ctx =>
         {
+            OnStopForward?.Invoke();
             if (isFrozen)
             {
                 isForwarding = false;

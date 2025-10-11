@@ -18,11 +18,16 @@ public class CloneController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
         rb.freezeRotation = true;
-        frameIndex = playerRecorder.recordedFrames.Count - 1;
 
-        // Copiamos las posiciones del jugador hasta ahora
         if (playerRecorder != null)
             localFrames = new List<PlayerFrameData>(playerRecorder.recordedFrames);
+
+        frameIndex = localFrames.Count - 1;
+
+        TimeControls.OnFreeze += () =>
+        {
+            frameIndex = localFrames.Count - 1;
+        };
     }
 
     void Update()
@@ -111,5 +116,4 @@ public class CloneController : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
 }
