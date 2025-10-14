@@ -13,6 +13,10 @@ public class PlayerMovement : MonoBehaviour
     public Transform cameraHolder;
     public Camera playerCamera;
 
+    [Header("Audio Settings")]
+    public float footstepInterval = 0.5f;
+    private float footstepTimer = 0f;
+
     [Header("Camera Advanced")]
     public float deadZone = 0.001f;
 
@@ -20,9 +24,16 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 moveInput;
     private bool jumpPressed;
     private bool isGrounded;
+    private bool wasGrounded;
     private float xRotation = 0f;
 
+    AudioManager audioManager;
     public TimeControls timeControls;
+
+    private void Awake()
+    {
+        audioManager = GameObject.FindGameObjectWithTag("Audio").GetComponent<AudioManager>();
+    }
 
     private void Start()
     {
@@ -45,11 +56,10 @@ public class PlayerMovement : MonoBehaviour
 
     public void OnJump(InputAction.CallbackContext context)
     {
-        Debug.Log($"Jump pressed: {context.performed}, Grounded: {isGrounded}");
         if (context.performed && isGrounded)
         {
             jumpPressed = true;
-            Debug.Log("JUMP ACTIVADO!");
+            // No hay sonido de salto, solo el de caída después
         }
     }
 
@@ -57,6 +67,52 @@ public class PlayerMovement : MonoBehaviour
     {
         if (playerCamera != null && cameraHolder != null)
             HandleMouseLook();
+
+        HandleFootstepSounds();
+        CheckLandingSound();
+    }
+
+    private void HandleFootstepSounds()
+    {
+        bool isMoving = moveInput.magnitude > 0.1f && isGrounded;
+
+        if (isMoving)
+        {
+            footstepTimer -= Time.deltaTime;
+            if (footstepTimer <= 0f)
+            {
+                // Reproducir sonido de paso aleatorio
+                if (audioManager != null)
+                    audioManager.PlayRandomFootstep();
+
+                footstepTimer = footstepInterval;
+            }
+        }
+        else
+        {
+            footstepTimer = 0f;
+        }
+    }
+
+    private void CheckLandingSound()
+    {
+        // Reproducir sonido de caída al aterrizar
+        if (isGrounded && !wasGrounded)
+        {
+            // Pequeño delay para que no se reproduzca en el salto inicial
+            if (rb.linearVelocity.y < -2f) // Solo si cayó desde cierta altura
+            {
+                Invoke(nameof(PlayFallSound), 0.1f);
+            }
+        }
+
+        wasGrounded = isGrounded;
+    }
+
+    private void PlayFallSound()
+    {
+        if (audioManager != null)
+            audioManager.PlayFallSound();
     }
 
     private void HandleMouseLook()
@@ -112,7 +168,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (timeControls != null && timeControls.isFrozen) return;
 
-        if (jumpPressed && isGrounded)  // Aquí se verifica isGrounded
+        if (jumpPressed && isGrounded)
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -121,7 +177,6 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (jumpPressed)
         {
-            // Si se presionó salto pero no está en el suelo, resetear
             jumpPressed = false;
         }
 

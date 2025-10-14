@@ -7,6 +7,7 @@ TagManager:
   - Floor
   - Pickup
   - Clone
+  - Audio
   layers:
   - Default
   - TransparentFX
