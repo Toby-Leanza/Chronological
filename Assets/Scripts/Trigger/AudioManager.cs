@@ -3,14 +3,12 @@ using UnityEngine;
 public class AudioManager : MonoBehaviour
 {
     [Header("Audio Sources")]
-
     [SerializeField] AudioSource musicSource;
     [SerializeField] AudioSource SFXSource;
 
     [Header("Audio Clips")]
-
     public AudioClip[] footstepSounds;
-    
+
     public AudioClip background;
     public AudioClip grabClock;
     public AudioClip fallSound;
@@ -31,9 +29,18 @@ public class AudioManager : MonoBehaviour
     public AudioClip rewindTime;
     public AudioClip spawnCopy;
     private float backgroundVolume;
+    private float sfxVolume = 1f;
 
     private void Start()
     {
+        // Cargar volúmenes guardados
+        backgroundVolume = PlayerPrefs.GetFloat("MusicVolume", 1f);
+        sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
+
+        // Aplicar volúmenes al iniciar
+        musicSource.volume = backgroundVolume;
+        SFXSource.volume = sfxVolume;
+
         musicSource.clip = background;
         musicSource.loop = true;
         musicSource.Play();
@@ -90,4 +97,13 @@ public class AudioManager : MonoBehaviour
 
     public float GetMusicVolume() => backgroundVolume;
 
+    public void SetSFXVolume(float volume)
+    {
+        sfxVolume = Mathf.Clamp01(volume);
+        if (SFXSource != null)
+            SFXSource.volume = sfxVolume;
+        PlayerPrefs.SetFloat("SFXVolume", sfxVolume);
+    }
+
+    public float GetSFXVolume() => sfxVolume;
 }
