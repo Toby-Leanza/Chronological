@@ -28,7 +28,6 @@ public class CloneController : MonoBehaviour
 
         if (playerRecorder != null && playerRecorder.recordedFrames.Count > 0)
         {
-
             // COPIAR localFrames (nuevas instancias para posición)
             foreach (var frame in playerRecorder.recordedFrames)
             {
@@ -40,7 +39,7 @@ public class CloneController : MonoBehaviour
                 ));
             }
 
-            frameIndex = playerRecorder.recordedFrames.Count - 1; // Usar playerRecorder.recordedFrames como referencia
+            frameIndex = playerRecorder.recordedFrames.Count - 1;
 
             // APLICAR POSICIÓN INICIAL desde localFrames
             if (frameIndex >= 0 && frameIndex < localFrames.Count)
@@ -57,7 +56,7 @@ public class CloneController : MonoBehaviour
         hasInitialized = true;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (!isAlive || !hasInitialized) return;
 
@@ -78,14 +77,14 @@ public class CloneController : MonoBehaviour
             if (rewinding)
                 frameIndex = Mathf.Max(0, frameIndex - 1);
             else if (forwarding)
-                frameIndex = Mathf.Min(playerRecorder.recordedFrames.Count - 1, frameIndex + 1); // Usar playerRecorder.recordedFrames.Count como límite
+                frameIndex = Mathf.Min(playerRecorder.recordedFrames.Count - 1, frameIndex + 1);
 
             // Aplicar frame desde localFrames
             ApplyFrame(localFrames, frameIndex);
         }
         else
         {
-            // TIEMPO DESCONGELADO: Usar playerRecorder.recordedFrames para inputs (Física)
+            // TIEMPO DESCONGELADO: Física activa
             if (rb != null && rb.isKinematic)
                 rb.isKinematic = false;
 
@@ -188,7 +187,7 @@ public class CloneController : MonoBehaviour
         Vector3 direction = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
         Vector3 worldDirection = transform.TransformDirection(direction);
 
-        // Aplicar fuerza para movimiento físico
+        // Aplicar fuerza para movimiento físico (en FixedUpdate)
         Vector3 force = worldDirection * (playerMovement.speed * 8f);
         rb.AddForce(force, ForceMode.Force);
 

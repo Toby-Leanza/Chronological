@@ -24,7 +24,7 @@ public class PlayerRecorder : MonoBehaviour
         playerControls.Enable();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         if (!record) return;
         if (TimeControls.Instance != null && TimeControls.Instance.isFrozen) return;
