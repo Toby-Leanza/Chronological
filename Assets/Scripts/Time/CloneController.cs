@@ -1,14 +1,17 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class CloneController : MonoBehaviour
 {
+
     [HideInInspector] public PlayerRecorder playerRecorder;
     [HideInInspector] public PlayerMovement playerMovement;
     [HideInInspector] public Transform playerTransform;
 
     private Rigidbody rb;
     private Collider col;
+    private bool isAlive = true;
+    private bool hasInitialized = false;
 
     private int frameIndex;
     private List<PlayerFrameData> localFrames = new List<PlayerFrameData>();
@@ -17,29 +20,50 @@ public class CloneController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
-        rb.freezeRotation = true;
 
-        if (playerRecorder != null)
-            localFrames = new List<PlayerFrameData>(playerRecorder.recordedFrames);
-
-        frameIndex = localFrames.Count - 1;
-
-        TimeControls.OnFreeze += () =>
+        if (rb != null)
         {
+            rb.freezeRotation = true;
+            rb.isKinematic = true; // ← IMPORTANTE: Kinematic al inicio
+        }
+
+        if (playerRecorder != null && playerRecorder.recordedFrames.Count > 0)
+        {
+            localFrames = new List<PlayerFrameData>(playerRecorder.recordedFrames);
             frameIndex = localFrames.Count - 1;
-        };
+
+            // APLICAR POSICIÓN INICIAL INMEDIATAMENTE
+            if (frameIndex >= 0 && frameIndex < localFrames.Count)
+            {
+                transform.position = localFrames[frameIndex].position;
+                transform.rotation = localFrames[frameIndex].rotation;
+            }
+
+            Debug.Log($"Clone inicializado en frame {frameIndex} - Pos: {transform.position}");
+        }
+
+        TimeControls.OnUnfreeze += OnUnfreeze;
+        TimeControls.OnFreeze += OnFreeze;
+
+        hasInitialized = true;
     }
 
     void Update()
     {
+        if (!isAlive || !hasInitialized) return;
+
         bool frozen = TimeControls.Instance.isFrozen;
         bool rewinding = TimeControls.Instance.isRewinding;
         bool forwarding = TimeControls.Instance.isForwarding;
 
         if (frozen)
         {
-            rb.isKinematic = true;
-            col.isTrigger = true;
+            // MANTENER kinematic durante tiempo congelado
+            if (rb != null && !rb.isKinematic)
+                rb.isKinematic = true;
+
+            if (col != null && !col.isTrigger)
+                col.isTrigger = true;
 
             if (rewinding)
                 frameIndex = Mathf.Max(0, frameIndex - 1);
@@ -50,11 +74,15 @@ public class CloneController : MonoBehaviour
         }
         else
         {
-            rb.isKinematic = false;
-            col.isTrigger = false;
+            // SOLO activar física cuando el tiempo no está congelado
+            if (rb != null && rb.isKinematic)
+                rb.isKinematic = false;
 
-            // Aplicar inputs del jugador actual
-            if (frameIndex < playerRecorder.recordedFrames.Count)
+            if (col != null && col.isTrigger)
+                col.isTrigger = false;
+
+            // ... resto del código para tiempo normal
+            if (playerRecorder != null && frameIndex < playerRecorder.recordedFrames.Count)
             {
                 var inputFrame = playerRecorder.recordedFrames[frameIndex];
                 HandleMovement(inputFrame.moveInput, inputFrame.rotation);
@@ -63,12 +91,29 @@ public class CloneController : MonoBehaviour
 
             HandleGravity();
 
-            // Guardar posición actual del clon
             localFrames.Add(new PlayerFrameData(transform.position, transform.rotation, Vector2.zero, false));
-
             frameIndex++;
         }
     }
+    private void OnUnfreeze()
+    {
+        for (int i = localFrames.Count - 1; i > frameIndex; i--)
+        {
+            localFrames.RemoveAt(i);
+        }
+
+        Debug.Log($"Borrados frames futuros. Frames restantes: {localFrames.Count}");
+
+        rb.isKinematic = false;
+        col.isTrigger = false;
+    }
+
+    private void OnFreeze()
+    {
+        rb.isKinematic = true;
+        col.isTrigger = true;
+    }
+
 
     private void ApplyFrame(List<PlayerFrameData> frames, int index)
     {
@@ -113,6 +158,9 @@ public class CloneController : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
+            TimeControls.OnUnfreeze -= OnUnfreeze;
+            TimeControls.OnFreeze -= OnFreeze;
+
             Destroy(gameObject);
         }
     }

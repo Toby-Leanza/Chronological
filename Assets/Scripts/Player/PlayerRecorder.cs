@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -29,7 +29,7 @@ public class PlayerRecorder : MonoBehaviour
         if (!record) return;
         if (TimeControls.Instance != null && TimeControls.Instance.isFrozen) return;
 
-        // Grabar posición, rotación e inputs
+        // Grabar posiciÃ³n, rotaciÃ³n e inputs
         recordedFrames.Add(new PlayerFrameData(
             transform.position,
             transform.rotation,

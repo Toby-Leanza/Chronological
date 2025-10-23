@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerMovement : MonoBehaviour
@@ -113,7 +113,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (timeControls != null && timeControls.isFrozen) return;
 
-        if (jumpPressed && isGrounded)  // AquÌ se verifica isGrounded
+        if (jumpPressed && isGrounded)  // Aqu√≠ se verifica isGrounded
         {
             rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -122,7 +122,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else if (jumpPressed)
         {
-            // Si se presionÛ salto pero no est· en el suelo, resetear
+            // Si se presion√≥ salto pero no est√° en el suelo, resetear
             jumpPressed = false;
         }
 
