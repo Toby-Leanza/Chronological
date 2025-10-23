@@ -3,7 +3,6 @@ using UnityEngine;
 
 public class CloneController : MonoBehaviour
 {
-
     [HideInInspector] public PlayerRecorder playerRecorder;
     [HideInInspector] public PlayerMovement playerMovement;
     [HideInInspector] public Transform playerTransform;
@@ -24,27 +23,37 @@ public class CloneController : MonoBehaviour
         if (rb != null)
         {
             rb.freezeRotation = true;
-            rb.isKinematic = true; // ← IMPORTANTE: Kinematic al inicio
+            rb.isKinematic = true;
         }
 
         if (playerRecorder != null && playerRecorder.recordedFrames.Count > 0)
         {
-            localFrames = new List<PlayerFrameData>(playerRecorder.recordedFrames);
-            frameIndex = localFrames.Count - 1;
 
-            // APLICAR POSICIÓN INICIAL INMEDIATAMENTE
+            // COPIAR localFrames (nuevas instancias para posición)
+            foreach (var frame in playerRecorder.recordedFrames)
+            {
+                localFrames.Add(new PlayerFrameData(
+                    frame.position,
+                    frame.rotation,
+                    frame.moveInput,
+                    frame.jumpPressed
+                ));
+            }
+
+            frameIndex = playerRecorder.recordedFrames.Count - 1; // Usar playerRecorder.recordedFrames como referencia
+
+            // APLICAR POSICIÓN INICIAL desde localFrames
             if (frameIndex >= 0 && frameIndex < localFrames.Count)
             {
                 transform.position = localFrames[frameIndex].position;
                 transform.rotation = localFrames[frameIndex].rotation;
             }
 
-            Debug.Log($"Clone inicializado en frame {frameIndex} - Pos: {transform.position}");
+            Debug.Log($"Clone inicializado - Global: {playerRecorder.recordedFrames.Count}, Local: {localFrames.Count}, Frame: {frameIndex}");
         }
 
         TimeControls.OnUnfreeze += OnUnfreeze;
         TimeControls.OnFreeze += OnFreeze;
-
         hasInitialized = true;
     }
 
@@ -58,45 +67,67 @@ public class CloneController : MonoBehaviour
 
         if (frozen)
         {
-            // MANTENER kinematic durante tiempo congelado
+            // TIEMPO CONGELADO: Usar localFrames para posición/rotación (Kinematic)
             if (rb != null && !rb.isKinematic)
                 rb.isKinematic = true;
 
             if (col != null && !col.isTrigger)
                 col.isTrigger = true;
 
+            // Navegar por la línea temporal
             if (rewinding)
                 frameIndex = Mathf.Max(0, frameIndex - 1);
             else if (forwarding)
-                frameIndex = Mathf.Min(localFrames.Count - 1, frameIndex + 1);
+                frameIndex = Mathf.Min(playerRecorder.recordedFrames.Count - 1, frameIndex + 1); // Usar playerRecorder.recordedFrames.Count como límite
 
+            // Aplicar frame desde localFrames
             ApplyFrame(localFrames, frameIndex);
         }
         else
         {
-            // SOLO activar física cuando el tiempo no está congelado
+            // TIEMPO DESCONGELADO: Usar playerRecorder.recordedFrames para inputs (Física)
             if (rb != null && rb.isKinematic)
                 rb.isKinematic = false;
 
             if (col != null && col.isTrigger)
                 col.isTrigger = false;
 
-            // ... resto del código para tiempo normal
-            if (playerRecorder != null && frameIndex < playerRecorder.recordedFrames.Count)
+            // Usar playerRecorder.recordedFrames para inputs del jugador original
+            if (frameIndex < playerRecorder.recordedFrames.Count)
             {
                 var inputFrame = playerRecorder.recordedFrames[frameIndex];
                 HandleMovement(inputFrame.moveInput, inputFrame.rotation);
                 HandleJump(inputFrame.jumpPressed);
             }
+            else
+            {
+                // Si no hay más frames globales, aplicar fricción
+                Vector3 currentVel = rb.linearVelocity;
+                rb.linearVelocity = new Vector3(currentVel.x * 0.8f, currentVel.y, currentVel.z * 0.8f);
+            }
 
             HandleGravity();
 
-            localFrames.Add(new PlayerFrameData(transform.position, transform.rotation, Vector2.zero, false));
+            // Grabar nueva posición en localFrames (ramificación temporal)
+            localFrames.Add(new PlayerFrameData(
+                transform.position,
+                transform.rotation,
+                Vector2.zero, // Los nuevos frames locales no tienen input
+                false
+            ));
+
             frameIndex++;
         }
     }
+
     private void OnUnfreeze()
     {
+        if (!isAlive) return;
+
+        // CORRECCIÓN: Asegurar que frameIndex esté dentro de los límites
+        frameIndex = Mathf.Min(frameIndex, localFrames.Count - 1);
+
+        // Borrar frames futuros de localFrames (ramificación temporal)
         for (int i = localFrames.Count - 1; i > frameIndex; i--)
         {
             localFrames.RemoveAt(i);
@@ -104,34 +135,76 @@ public class CloneController : MonoBehaviour
 
         Debug.Log($"Borrados frames futuros. Frames restantes: {localFrames.Count}");
 
-        rb.isKinematic = false;
-        col.isTrigger = false;
+        // Resetear física para transición suave
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = false;
+        }
+
+        if (col != null)
+            col.isTrigger = false;
     }
 
     private void OnFreeze()
     {
-        rb.isKinematic = true;
-        col.isTrigger = true;
-    }
+        if (!isAlive) return;
 
+        // Resetear física antes de congelar
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = true;
+        }
+
+        if (col != null)
+            col.isTrigger = true;
+
+        // Asegurar que frameIndex esté sincronizado
+        frameIndex = Mathf.Min(frameIndex, localFrames.Count - 1);
+    }
 
     private void ApplyFrame(List<PlayerFrameData> frames, int index)
     {
         if (frames.Count == 0 || index < 0 || index >= frames.Count) return;
+
+        // Teleport directo (correcto para modo kinematic)
         transform.position = frames[index].position;
         transform.rotation = frames[index].rotation;
     }
 
     private void HandleMovement(Vector2 moveInput, Quaternion rotation)
     {
-        if (moveInput.magnitude < 0.01f) return;
+        if (moveInput.magnitude < 0.01f)
+        {
+            // Aplicar fricción cuando no hay input
+            Vector3 currentVel = rb.linearVelocity;
+            rb.linearVelocity = new Vector3(currentVel.x * 0.9f, currentVel.y, currentVel.z * 0.9f);
+            return;
+        }
+
         Vector3 direction = new Vector3(moveInput.x, 0f, moveInput.y).normalized;
-        Vector3 desiredVelocity = transform.TransformDirection(direction) * playerMovement.speed;
-        Vector3 velocityChange = new Vector3(desiredVelocity.x - rb.linearVelocity.x, 0f, desiredVelocity.z - rb.linearVelocity.z);
-        Vector3 targetVelocity = transform.TransformDirection(new Vector3(moveInput.x, 0, moveInput.y)) * playerMovement.speed;
-        rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
-        Quaternion targetRotation = rotation;
-        rb.MoveRotation(rotation);
+        Vector3 worldDirection = transform.TransformDirection(direction);
+
+        // Aplicar fuerza para movimiento físico
+        Vector3 force = worldDirection * (playerMovement.speed * 8f);
+        rb.AddForce(force, ForceMode.Force);
+
+        // Limitar velocidad máxima
+        Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+        if (flatVel.magnitude > playerMovement.speed)
+        {
+            flatVel = flatVel.normalized * playerMovement.speed;
+            rb.linearVelocity = new Vector3(flatVel.x, rb.linearVelocity.y, flatVel.z);
+        }
+
+        // Rotación
+        if (moveInput.magnitude > 0.1f)
+        {
+            rb.MoveRotation(rotation);
+        }
     }
 
     private void HandleJump(bool jumpPressed)
@@ -139,7 +212,6 @@ public class CloneController : MonoBehaviour
         if (jumpPressed && IsGrounded())
         {
             float jumpForce = playerMovement?.jumpForce ?? 10f;
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
     }
@@ -147,21 +219,33 @@ public class CloneController : MonoBehaviour
     private void HandleGravity()
     {
         if (!IsGrounded())
-            rb.AddForce(Physics.gravity * 1.5f, ForceMode.Acceleration);
+            rb.AddForce(Physics.gravity * 1.2f, ForceMode.Acceleration);
     }
 
     private bool IsGrounded()
     {
         return Physics.Raycast(transform.position, Vector3.down, 0.6f);
     }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            TimeControls.OnUnfreeze -= OnUnfreeze;
-            TimeControls.OnFreeze -= OnFreeze;
-
-            Destroy(gameObject);
+            DestroyClone();
         }
+    }
+
+    private void DestroyClone()
+    {
+        isAlive = false;
+        TimeControls.OnUnfreeze -= OnUnfreeze;
+        TimeControls.OnFreeze -= OnFreeze;
+        Destroy(gameObject);
+    }
+
+    private void OnDestroy()
+    {
+        TimeControls.OnUnfreeze -= OnUnfreeze;
+        TimeControls.OnFreeze -= OnFreeze;
     }
 }
