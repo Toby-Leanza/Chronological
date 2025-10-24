@@ -9,19 +9,17 @@ public class CloneController : Living
     [Header("Clone State")]
     private int frameIndex = 0;
 
-    protected void Start()
+    protected bool IsRewinding => TimeControls.Instance != null && TimeControls.Instance.isFrozen;
+    protected bool IsForwarding => TimeControls.Instance != null && TimeControls.Instance.isFrozen;
+
+    protected override void Start()
     {
+        base.Start();
         posRecorder = GetComponent<PosRecorder>();
 
         if (posRecorder != null)
         {
             posRecorder.record = true;
-        }
-
-        // Copiar KeyFrames del jugador
-        if (keyRecorder != null)
-        {
-            globalFrames = new List<KeyFrameData>(keyRecorder.recordedKeyFrames);
         }
 
         // Configurar física específica del clon
@@ -36,6 +34,10 @@ public class CloneController : Living
 
         TimeControls.OnFreeze += OnFreeze;
         TimeControls.OnUnfreeze += OnUnfreeze;
+
+        frameIndex = localFrames.Count - 1;
+        localFrames = playerMovement.localFrames;
+        FrozenMovement();
     }
 
     protected override void FixedUpdate()
@@ -50,7 +52,7 @@ public class CloneController : Living
 
         if (IsFrozen)
         {
-            HandleFrozenTime();
+            FrozenMovement();
         }
         else
         {
@@ -61,16 +63,22 @@ public class CloneController : Living
         ApplyFrame();
     }
 
-    private void HandleFrozenTime()
+    private void FrozenMovement()
     {
-        if (TimeControls.Instance.isRewinding)
+        transform.position = localFrames[frameIndex].position;
+        transform.rotation = localFrames[frameIndex].rotation;
+
+
+        if (IsRewinding)
         {
             frameIndex = Mathf.Max(0, frameIndex - 1);
         }
-        else if (TimeControls.Instance.isForwarding)
+        else if (IsForwarding)
         {
             frameIndex = Mathf.Min(globalFrames.Count - 1, frameIndex + 1);
         }
+
+        localFrames.Add(new PosFrameData(transform.position, transform.rotation));
     }
 
     private void ApplyFrame()
@@ -99,11 +107,19 @@ public class CloneController : Living
 
     private void OnUnfreeze()
     {
+
+        // Ramificar línea temporal
+        if (localFrames.Count > frameIndex + 1)
+        {
+            localFrames.RemoveRange(frameIndex + 1, localFrames.Count - 1);
+            Debug.Log($"✅ Línea temporal ramificada. Frames mantenidos: {localFrames.Count}");
+        }
         if (rb != null)
         {
             rb.isKinematic = false;
             if (col != null) col.isTrigger = false;
         }
+
     }
 
     private void OnDestroy()

@@ -12,9 +12,11 @@ public class PlayerMovement : Living
     public TimeControls timeControls;
     private float xRotation = 0f;
 
-    private void Start()
+    protected override void Start()
     {
+        base.Start();
         keyRecorder = GetComponent<KeyRecorder>();
+        SetPlayerKeyRecorder(keyRecorder);
         if (rb != null) rb.freezeRotation = true;
         Cursor.lockState = CursorLockMode.Locked;
 

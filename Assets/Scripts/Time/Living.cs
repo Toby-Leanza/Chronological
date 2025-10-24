@@ -13,18 +13,19 @@ public abstract class Living : MonoBehaviour
 
     [Header("State")]
     protected bool isGrounded = false;
-    protected bool IsFrozen => TimeControls.Instance.isFrozen;
+    protected bool IsFrozen => TimeControls.Instance != null &&  TimeControls.Instance.isFrozen;
 
     [Header("Recordings")]
-    protected static List<KeyFrameData> globalFrames = new List<KeyFrameData>();
-    protected List<PosFrameData> localFrames = new List<PosFrameData>();
-    public static KeyRecorder keyRecorder = new KeyRecorder();
-    protected PosRecorder posRecorder = new PosRecorder();
+    public static List<KeyFrameData> globalFrames = new List<KeyFrameData>();
+    public List<PosFrameData> localFrames = new List<PosFrameData>();
+    public static KeyRecorder keyRecorder;
+    protected PosRecorder posRecorder;
 
-    protected virtual void Awake()
+    protected virtual void Start()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
+        posRecorder = GetComponent<PosRecorder>();
 
         if (rb != null)
         {
@@ -78,6 +79,16 @@ public abstract class Living : MonoBehaviour
                 currentVel.z
             );
             isGrounded = false;
+        }
+    }
+
+    // ✅ MÉTODO para inicializar el static keyRecorder
+    public static void SetPlayerKeyRecorder(KeyRecorder recorder)
+    {
+        keyRecorder = recorder;
+        if (keyRecorder != null)
+        {
+            globalFrames = new List<KeyFrameData>(keyRecorder.recordedKeyFrames);
         }
     }
     protected virtual void CheckGrounded()

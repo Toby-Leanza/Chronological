@@ -35,16 +35,11 @@ public class CloneManager : MonoBehaviour
         if (clones.Count >= maxClones)
             DestroyOldestClone();
 
-        Vector3 spawnPos = GetSpawnPosition();
-        Quaternion spawnRot = player != null ? player.rotation : Quaternion.identity;
-
-        GameObject cloneObj = Instantiate(clonePrefab, spawnPos, spawnRot);
+        GameObject cloneObj = Instantiate(clonePrefab);
         CloneController cloneCtrl = cloneObj.GetComponent<CloneController>();
 
         if (cloneCtrl != null)
         {
-            // Asignar referencias actualizadas
-            Living.keyRecorder = keyRecorder;
             cloneCtrl.playerMovement = playerMovement;
 
             clones.Add(cloneCtrl);
@@ -56,15 +51,6 @@ public class CloneManager : MonoBehaviour
             Debug.LogError("El prefab del clon no tiene CloneController");
             Destroy(cloneObj);
         }
-    }
-
-    private Vector3 GetSpawnPosition()
-    {
-        if (player == null) return Vector3.zero;
-
-        // Posición de spawn con offset para evitar colisión inmediata
-        Vector3 spawnOffset = Vector3.right * 2f;
-        return player.position + spawnOffset;
     }
 
     private void DestroyOldestClone()
