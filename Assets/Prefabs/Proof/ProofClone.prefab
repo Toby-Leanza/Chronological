@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 461325622347628236}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 14.30543, y: 6.99, z: -32.82}
+  m_LocalPosition: {x: 14.30543, y: 6.99, z: -21.91}
   m_LocalScale: {x: 5, y: 6.5, z: 5}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -111,10 +111,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.4951046
+  m_Radius: 0.5
   m_Height: 2
   m_Direction: 1
-  m_Center: {x: 0, y: 0, z: 0.0054836273}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &6331357840648814366
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -123,7 +123,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 461325622347628236}
   serializedVersion: 5
-  m_Mass: 2
+  m_Mass: 1
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -137,7 +137,7 @@ Rigidbody:
     m_Bits: 0
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
-  m_UseGravity: 0
+  m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 80
@@ -157,5 +157,3 @@ MonoBehaviour:
   playerRecorder: {fileID: 0}
   playerMovement: {fileID: 0}
   playerTransform: {fileID: 0}
-  moveSpeed: 5
-  destroyDistance: 5
