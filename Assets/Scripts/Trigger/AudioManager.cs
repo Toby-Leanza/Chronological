@@ -39,6 +39,7 @@ public class AudioManager : MonoBehaviour
         musicSource.volume = backgroundVolume;
         SFXSource.volume = sfxVolume;
 
+        background = Resources.LoadAll<AudioClip>("Sounds/Music");
         PlayRandomBackgroundMusic();
     }
 
