@@ -4380,7 +4380,32 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ddecab82ac5f7d44c98d3c0564f3e673, type: 3}
   - {fileID: 8300000, guid: bb8e32c078ba72e46bd3e2a1c721f5f2, type: 3}
   - {fileID: 8300000, guid: 802c647162847244d8d9d6fb1872d40d, type: 3}
-  background: {fileID: 8300000, guid: 01e27b0783125aa4da3fa7aed4f79640, type: 3}
+  background:
+  - {fileID: 8300000, guid: cad9e023ebd4a834b8df21dd1848dbf3, type: 3}
+  - {fileID: 8300000, guid: 01e27b0783125aa4da3fa7aed4f79640, type: 3}
+  - {fileID: 8300000, guid: d3af17b4010e1224aa37ab882a10d7c4, type: 3}
+  - {fileID: 8300000, guid: 96c213e722d4ddc46bed0495a00d00c9, type: 3}
+  - {fileID: 8300000, guid: 22c1ec96099d0754f8f9ca663bac74f2, type: 3}
+  - {fileID: 8300000, guid: 9ecc084d1eb073048beb59b03e9b883b, type: 3}
+  - {fileID: 8300000, guid: f73c188732597d343a8bb8a77eeea5bd, type: 3}
+  - {fileID: 8300000, guid: b28239d4efd1a4347a7c3c21d47e9478, type: 3}
+  - {fileID: 8300000, guid: 76c65e518a6321342baca9b8b47de555, type: 3}
+  - {fileID: 8300000, guid: 7c11728e48dcd9a47abc17751be54470, type: 3}
+  - {fileID: 8300000, guid: 95e356b9bb2370741996800c0f433dc9, type: 3}
+  - {fileID: 8300000, guid: 671ac4ea2ab4ad246a8d1a3f5cf3c086, type: 3}
+  - {fileID: 8300000, guid: c6a86cb101868fa418a80dc9c75a722c, type: 3}
+  - {fileID: 8300000, guid: 63e254146f7c4354ba15068f3a64b490, type: 3}
+  - {fileID: 8300000, guid: e90291944595d7545ba118faa0aec95b, type: 3}
+  - {fileID: 8300000, guid: f9bfdd94f3c558048b564ae472e900df, type: 3}
+  - {fileID: 8300000, guid: 849623ce48809594ca8bb93542638399, type: 3}
+  - {fileID: 8300000, guid: b98bf0110491f5a459d52c2fa53fb4bf, type: 3}
+  - {fileID: 8300000, guid: 2e9f24be21cb0cc4f81823a8f3607ea4, type: 3}
+  - {fileID: 8300000, guid: d8246020cd6ce434184d74eb0930073b, type: 3}
+  - {fileID: 8300000, guid: 000f949617dfafa44969773aad918ba6, type: 3}
+  - {fileID: 8300000, guid: 25a8c08c2b32d194680680aa56a609fd, type: 3}
+  - {fileID: 8300000, guid: 1122d79b8947b7443bfbc5bd0d2d0a29, type: 3}
+  - {fileID: 8300000, guid: c78d84b2861816f43bde1dc83620aa8c, type: 3}
+  - {fileID: 8300000, guid: 4673146563a623c42bf2a07cb1bb9325, type: 3}
   grabClock: {fileID: 8300000, guid: 622e672c4e86a124f8ed2fac48e12bf2, type: 3}
   fallSound: {fileID: 8300000, guid: beb902deb837083468a93bebc55527c0, type: 3}
   fstFwdTime: {fileID: 8300000, guid: 24b96a8ff78eade46a1b304d665d2a78, type: 3}

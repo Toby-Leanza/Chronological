@@ -8,8 +8,8 @@ public class AudioManager : MonoBehaviour
 
     [Header("Audio Clips")]
     public AudioClip[] footstepSounds;
+    public AudioClip[] background; // Ahora es un array
 
-    public AudioClip background;
     public AudioClip grabClock;
     public AudioClip fallSound;
     public AudioClip fstFwdTime;
@@ -33,17 +33,26 @@ public class AudioManager : MonoBehaviour
 
     private void Start()
     {
-        // Cargar volúmenes guardados
         backgroundVolume = PlayerPrefs.GetFloat("MusicVolume", 1f);
         sfxVolume = PlayerPrefs.GetFloat("SFXVolume", 1f);
 
-        // Aplicar volúmenes al iniciar
         musicSource.volume = backgroundVolume;
         SFXSource.volume = sfxVolume;
 
-        musicSource.clip = background;
-        musicSource.loop = true;
-        musicSource.Play();
+        PlayRandomBackgroundMusic();
+    }
+
+    public void PlayRandomBackgroundMusic()
+    {
+        if (background.Length > 0)
+        {
+            AudioClip randomClip = background[Random.Range(0, background.Length)];
+            musicSource.clip = randomClip;
+            musicSource.loop = false;
+            musicSource.Play();
+
+            Invoke(nameof(PlayRandomBackgroundMusic), randomClip.length);
+        }
     }
 
     public void PlaySFX(AudioClip clip)
