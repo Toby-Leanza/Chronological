@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 4354514786805388362}
   - component: {fileID: 6331357840648814366}
   - component: {fileID: 8295718329245671220}
+  - component: {fileID: -2245995084407857589}
   m_Layer: 6
   m_Name: ProofClone
   m_TagString: Clone
@@ -154,7 +155,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a17a90b38085b9b4087aae39d64aabd3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerRecorder: {fileID: 0}
+  speed: 50
+  jumpForce: 10
+  playerKeyRecorder: {fileID: 0}
   playerMovement: {fileID: 0}
-  playerTransform: {fileID: 0}
-  destroyDistance: 5
+--- !u!114 &-2245995084407857589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 461325622347628236}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 743575158bf0a4a4d8482920422eee4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PosRecorder
+  recordedPosFrames: []
+  record: 1

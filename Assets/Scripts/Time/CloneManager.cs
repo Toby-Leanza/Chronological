@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class CloneManager : MonoBehaviour
 {
     [Header("Clone Settings")]
     public GameObject clonePrefab;
-    public PlayerRecorder playerRecorder;
+    public KeyRecorder keyRecorder;  // Cambiado de playerRecorder
     public Transform player;
     public PlayerMovement playerMovement;
 
@@ -19,16 +19,23 @@ public class CloneManager : MonoBehaviour
     {
         if (playerMovement == null && player != null)
             playerMovement = player.GetComponent<PlayerMovement>();
+
+        if (keyRecorder == null && player != null)
+            keyRecorder = player.GetComponent<KeyRecorder>();
     }
 
     public void SpawnClone()
     {
-        if (playerRecorder == null) return;
+        if (keyRecorder == null || keyRecorder.recordedKeyFrames.Count == 0)
+        {
+            Debug.LogWarning("No hay KeyFrames grabados para crear un clon");
+            return;
+        }
 
         if (clones.Count >= maxClones)
             DestroyOldestClone();
 
-        Vector3 spawnPos = player != null ? player.position : Vector3.zero;
+        Vector3 spawnPos = GetSpawnPosition();
         Quaternion spawnRot = player != null ? player.rotation : Quaternion.identity;
 
         GameObject cloneObj = Instantiate(clonePrefab, spawnPos, spawnRot);
@@ -36,13 +43,29 @@ public class CloneManager : MonoBehaviour
 
         if (cloneCtrl != null)
         {
-            cloneCtrl.playerRecorder = playerRecorder;
-            cloneCtrl.playerTransform = player;
+            // Asignar referencias actualizadas
+            Living.keyRecorder = keyRecorder;
             cloneCtrl.playerMovement = playerMovement;
+
             clones.Add(cloneCtrl);
+
+            Debug.Log($"Clon creado. KeyFrames disponibles: {keyRecorder.recordedKeyFrames.Count}");
+        }
+        else
+        {
+            Debug.LogError("El prefab del clon no tiene CloneController");
+            Destroy(cloneObj);
         }
     }
 
+    private Vector3 GetSpawnPosition()
+    {
+        if (player == null) return Vector3.zero;
+
+        // Posición de spawn con offset para evitar colisión inmediata
+        Vector3 spawnOffset = Vector3.right * 2f;
+        return player.position + spawnOffset;
+    }
 
     private void DestroyOldestClone()
     {
@@ -53,7 +76,8 @@ public class CloneManager : MonoBehaviour
             {
                 CloneController oldest = clones[0];
                 clones.RemoveAt(0);
-                Destroy(oldest.gameObject);
+                if (oldest != null)
+                    Destroy(oldest.gameObject);
             }
         }
     }
@@ -61,9 +85,13 @@ public class CloneManager : MonoBehaviour
     public void DestroyAllClones()
     {
         for (int i = clones.Count - 1; i >= 0; i--)
-            if (clones[i] != null) Destroy(clones[i].gameObject);
+        {
+            if (clones[i] != null)
+                Destroy(clones[i].gameObject);
+        }
 
         clones.Clear();
+        Debug.Log("Todos los clones destruidos");
     }
 
     public int GetActiveCloneCount()
@@ -78,5 +106,40 @@ public class CloneManager : MonoBehaviour
         return clones.Count < maxClones;
     }
 
+    // Método para obtener todos los KeyFrames grabados del jugador
+    public List<KeyFrameData> GetPlayerKeyFrames()
+    {
+        if (keyRecorder != null)
+            return new List<KeyFrameData>(keyRecorder.recordedKeyFrames);
+        return new List<KeyFrameData>();
+    }
+
+    // Método para forzar grabación de nuevos KeyFrames
+    public void StartNewRecording()
+    {
+        if (keyRecorder != null)
+        {
+            keyRecorder.ClearRecording();
+            keyRecorder.record = true;
+        }
+    }
+
+    // Método para pausar/reanudar grabación
+    public void SetRecording(bool recording)
+    {
+        if (keyRecorder != null)
+            keyRecorder.record = recording;
+    }
+
     private void Update() => clones.RemoveAll(c => c == null);
+
+    // Debug info
+    public void PrintCloneInfo()
+    {
+        Debug.Log($"Clones activos: {GetActiveCloneCount()}");
+        if (keyRecorder != null)
+        {
+            Debug.Log($"KeyFrames grabados: {keyRecorder.recordedKeyFrames.Count}");
+        }
+    }
 }

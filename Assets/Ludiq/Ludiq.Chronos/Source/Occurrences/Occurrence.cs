@@ -1,4 +1,4 @@
-namespace Chronos
+﻿namespace Chronos
 {
 	/// <summary>
 	/// An event anchored at a specified moment in time composed of two actions: one when time goes forward, and another when time goes backward. The latter is most often used to revert the former. 

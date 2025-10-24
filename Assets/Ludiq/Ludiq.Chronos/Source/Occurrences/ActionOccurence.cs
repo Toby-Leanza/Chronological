@@ -1,4 +1,4 @@
-namespace Chronos
+﻿namespace Chronos
 {
 	/// <summary>
 	/// An occurrence action that is executed when time goes forward.

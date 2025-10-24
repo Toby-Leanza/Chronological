@@ -1,164 +1,95 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerMovement : MonoBehaviour
+public class PlayerMovement : Living
 {
-    [Header("Movement Settings")]
-    public float speed = 8f;
-    public float jumpForce = 10f;
-    private float gravityMultiplier = 2.5f;
-
     [Header("Camera Settings")]
     public float mouseSensitivity = 100f;
     public Transform cameraHolder;
     public Camera playerCamera;
 
-    [Header("Camera Advanced")]
-    public float deadZone = 0.001f;
-
-    private Rigidbody rb;
-    private Vector2 moveInput;
-    private bool jumpPressed;
-    private bool isGrounded;
-    private float xRotation = 0f;
-
+    [Header("References")]
     public TimeControls timeControls;
+    private float xRotation = 0f;
 
     private void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.freezeRotation = true;
-
+        keyRecorder = GetComponent<KeyRecorder>();
+        if (rb != null) rb.freezeRotation = true;
         Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
 
-        if (cameraHolder == null)
-            cameraHolder = transform.Find("CameraHolder");
-        if (playerCamera == null && cameraHolder != null)
-            playerCamera = cameraHolder.GetComponentInChildren<Camera>();
-    }
-
-    public void OnMove(InputAction.CallbackContext context)
-    {
-        if (timeControls != null && timeControls.isFrozen)
-            moveInput = Vector2.zero;
-        else
-            moveInput = context.ReadValue<Vector2>();
-    }
-
-    public void OnJump(InputAction.CallbackContext context)
-    {
-        if (timeControls != null && timeControls.isFrozen) return;
-
-        if (context.performed && isGrounded)
-            jumpPressed = true;
+        TimeControls.OnFreeze += OnTimeFrozen;
+        TimeControls.OnUnfreeze += OnTimeUnfrozen;
     }
 
     private void Update()
     {
-        if (playerCamera != null && cameraHolder != null)
-            HandleMouseLook();
+        HandleMouseLook();
     }
 
     private void HandleMouseLook()
     {
-        float mouseX = Input.GetAxis("Mouse X");
-        float mouseY = Input.GetAxis("Mouse Y");
-
-        if (Mathf.Abs(mouseX) < deadZone) mouseX = 0f;
-        if (Mathf.Abs(mouseY) < deadZone) mouseY = 0f;
-
-        mouseX *= mouseSensitivity * Time.deltaTime;
-        mouseY *= mouseSensitivity * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -90f, 90f);
         cameraHolder.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-
         transform.Rotate(Vector3.up * mouseX);
     }
 
-    private void FixedUpdate()
+    protected override void FixedUpdate()
     {
-        HandleMovement();
-        HandleJump();
-    }
+        base.FixedUpdate(); // CheckGrounded
 
-    private void HandleMovement()
-    {
-        if (timeControls != null && timeControls.isFrozen) return;
-
-        if (playerCamera != null)
+        if (timeControls != null && IsFrozen)
         {
-            Vector3 forward = playerCamera.transform.forward;
-            Vector3 right = playerCamera.transform.right;
-
-            forward.y = 0f;
-            right.y = 0f;
-
-            forward.Normalize();
-            right.Normalize();
-
-            Vector3 direction = forward * moveInput.y + right * moveInput.x;
-            Vector3 desiredVelocity = direction * speed;
-
-            Vector3 currentVelocity = rb.linearVelocity;
-            Vector3 velocityChange = desiredVelocity - new Vector3(currentVelocity.x, 0f, currentVelocity.z);
-
-            rb.linearVelocity += velocityChange;
-        }
-    }
-
-    private void HandleJump()
-    {
-        if (timeControls != null && timeControls.isFrozen) return;
-
-        if (jumpPressed && isGrounded)  // Aquí se verifica isGrounded
-        {
-            rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-            jumpPressed = false;
-            isGrounded = false;
-        }
-        else if (jumpPressed)
-        {
-            // Si se presionó salto pero no está en el suelo, resetear
-            jumpPressed = false;
+            // Tiempo congelado - máxima fricción
+            Vector3 currentVel = rb.linearVelocity;
+            rb.linearVelocity = new Vector3(currentVel.x * 0.1f, currentVel.y, currentVel.z * 0.1f);
+            return;
         }
 
-        if (!isGrounded)
-            rb.AddForce(Physics.gravity * (gravityMultiplier - 1f), ForceMode.Acceleration);
-    }
+        // Leer inputs directamente en FixedUpdate
+        bool up = Input.GetKey(KeyCode.W) || Keyboard.current?.wKey.isPressed == true;
+        bool down = Input.GetKey(KeyCode.S) || Keyboard.current?.sKey.isPressed == true;
+        bool left = Input.GetKey(KeyCode.A) || Keyboard.current?.aKey.isPressed == true;
+        bool right = Input.GetKey(KeyCode.D) || Keyboard.current?.dKey.isPressed == true;
+        bool jump = Input.GetKey(KeyCode.Space) || Keyboard.current?.spaceKey.isPressed == true;
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Floor"))
-            isGrounded = true;
-    }
+        Quaternion cameraRotation = playerCamera.transform.rotation;
 
-    private void OnCollisionStay(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Floor"))
-            isGrounded = true;
-    }
+        // Crear y procesar frame
+        KeyFrameData frame = new KeyFrameData(up, down, left, right, jump, false, cameraRotation);
 
-    private void OnCollisionExit(Collision collision)
-    {
-        if (collision.gameObject.CompareTag("Floor"))
-            isGrounded = false;
-    }
-
-    private void OnApplicationFocus(bool hasFocus)
-    {
-        if (hasFocus)
+        // Grabar
+        if (keyRecorder != null && keyRecorder.record)
         {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            keyRecorder.recordedKeyFrames.Add(frame);
         }
+
+        // Procesar movimiento
+        UnfrozenMovement(frame);
     }
 
-    public void SetMouseSensitivity(float newSensitivity)
+    // INPUT METHODS (pueden quedar vacíos o eliminarse si no se usan)
+    public void OnMove(InputAction.CallbackContext context) { }
+    public void OnJump(InputAction.CallbackContext context) { }
+    public void OnInteract(InputAction.CallbackContext context) { }
+
+    private void OnTimeFrozen()
     {
-        mouseSensitivity = newSensitivity;
+        if (rb != null) rb.linearVelocity = Vector3.zero;
+    }
+
+    private void OnTimeUnfrozen()
+    {
+        // Reset adicional si es necesario
+    }
+
+    private void OnDestroy()
+    {
+        TimeControls.OnFreeze -= OnTimeFrozen;
+        TimeControls.OnUnfreeze -= OnTimeUnfrozen;
     }
 }
