@@ -145,7 +145,13 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (timeControls != null && timeControls.isFrozen) return;
+        if (timeControls != null && timeControls.isFrozen)
+        {
+            rb.isKinematic = true;
+            return;
+        }
+
+        rb.isKinematic = false;
 
         if (playerCamera != null)
         {

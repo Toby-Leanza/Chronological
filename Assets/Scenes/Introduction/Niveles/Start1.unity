@@ -2484,7 +2484,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ActivableByKey
   activationKey: 101
-  targetActivable: {fileID: 8815411762295628186}
+  targetDoor: {fileID: 0}
+  activationDistance: 3
 --- !u!136 &702208051
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -4380,7 +4381,31 @@ MonoBehaviour:
   - {fileID: 8300000, guid: ddecab82ac5f7d44c98d3c0564f3e673, type: 3}
   - {fileID: 8300000, guid: bb8e32c078ba72e46bd3e2a1c721f5f2, type: 3}
   - {fileID: 8300000, guid: 802c647162847244d8d9d6fb1872d40d, type: 3}
-  background: {fileID: 8300000, guid: 01e27b0783125aa4da3fa7aed4f79640, type: 3}
+  background:
+  - {fileID: 8300000, guid: cad9e023ebd4a834b8df21dd1848dbf3, type: 3}
+  - {fileID: 8300000, guid: 0f71f58a9b2beb9419a1752c87ba2cb2, type: 3}
+  - {fileID: 8300000, guid: d3af17b4010e1224aa37ab882a10d7c4, type: 3}
+  - {fileID: 8300000, guid: 96c213e722d4ddc46bed0495a00d00c9, type: 3}
+  - {fileID: 8300000, guid: d0fd085b1eaf93d4e92e06d20b9385fd, type: 3}
+  - {fileID: 8300000, guid: 9ecc084d1eb073048beb59b03e9b883b, type: 3}
+  - {fileID: 8300000, guid: 314ee7f053998094795bec7d1ef8a158, type: 3}
+  - {fileID: 8300000, guid: b28239d4efd1a4347a7c3c21d47e9478, type: 3}
+  - {fileID: 8300000, guid: 76c65e518a6321342baca9b8b47de555, type: 3}
+  - {fileID: 8300000, guid: 7c11728e48dcd9a47abc17751be54470, type: 3}
+  - {fileID: 8300000, guid: 7875208a54538df45b92ea7339bae48a, type: 3}
+  - {fileID: 8300000, guid: 4be6cfd3a8350ff48a1fb9a14cd4b2b4, type: 3}
+  - {fileID: 8300000, guid: c6a86cb101868fa418a80dc9c75a722c, type: 3}
+  - {fileID: 8300000, guid: 09fb63edd14b9c54e960cceae5c2761d, type: 3}
+  - {fileID: 8300000, guid: 111763536b0757e478931addcc5da6f0, type: 3}
+  - {fileID: 8300000, guid: 85e5e672bde1edc4e8407e6c1e066c84, type: 3}
+  - {fileID: 8300000, guid: a65fa3669fb19774ea8f1f6f07779574, type: 3}
+  - {fileID: 8300000, guid: 2d25dad0f88e0ea44a0c9c2c2faf6164, type: 3}
+  - {fileID: 8300000, guid: f8b6d10a15126f347960b61ff247d6a2, type: 3}
+  - {fileID: 8300000, guid: ca7891eaae5521845bed572fdd23c856, type: 3}
+  - {fileID: 8300000, guid: 25a8c08c2b32d194680680aa56a609fd, type: 3}
+  - {fileID: 8300000, guid: 963d6fcf0370e2e4bb886ca4e6db0802, type: 3}
+  - {fileID: 8300000, guid: 48aea197a60da7a498f8cf2422ff303c, type: 3}
+  - {fileID: 8300000, guid: 4673146563a623c42bf2a07cb1bb9325, type: 3}
   grabClock: {fileID: 8300000, guid: 622e672c4e86a124f8ed2fac48e12bf2, type: 3}
   fallSound: {fileID: 8300000, guid: beb902deb837083468a93bebc55527c0, type: 3}
   fstFwdTime: {fileID: 8300000, guid: 24b96a8ff78eade46a1b304d665d2a78, type: 3}
