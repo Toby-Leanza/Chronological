@@ -40,6 +40,7 @@ public class CloneManager : MonoBehaviour
             cloneCtrl.playerTransform = player;
             cloneCtrl.SetInitialState();
             clones.Add(cloneCtrl);
+            UpdateHUD();
         }
     }
 
@@ -49,6 +50,7 @@ public class CloneManager : MonoBehaviour
         {
             CloneController oldest = clones[0];
             clones.RemoveAt(0);
+            UpdateHUD();
             Destroy(oldest.gameObject);
         }
     }
@@ -59,6 +61,7 @@ public class CloneManager : MonoBehaviour
         {
             if (clone != null)
                 Destroy(clone.gameObject);
+                UpdateHUD();
         }
         clones.Clear();
     }
@@ -66,5 +69,14 @@ public class CloneManager : MonoBehaviour
     void Update()
     {
         clones.RemoveAll(c => c == null);
+    }
+
+    private void UpdateHUD()
+    {
+        CloneHUD cloneHUD = FindObjectOfType<CloneHUD>();
+        if (cloneHUD != null)
+        {
+            cloneHUD.UpdateHUD();
+        }
     }
 }
