@@ -8,6 +8,10 @@ public class PressurePlate : MonoBehaviour
     private bool state;
     private List<Activable> targets = new List<Activable>();
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip botonClip;
+
     void Awake()
     {
         state = inverted;
@@ -27,10 +31,20 @@ public class PressurePlate : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         state = inverted ? false : true;
+        ReproducirBoton();
     }
 
     void OnTriggerExit(Collider other)
     {
         state = inverted ? true : false;
+        ReproducirBoton();
+    }
+
+    private void ReproducirBoton()
+    {
+        if (audioSource != null && botonClip != null)
+        {
+            audioSource.PlayOneShot(botonClip);
+        }
     }
 }

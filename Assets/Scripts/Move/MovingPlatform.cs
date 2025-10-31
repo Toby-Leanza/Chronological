@@ -10,19 +10,38 @@ public class MovingPlatformChronos : MonoBehaviour
     [Header("CONFIGURACIÓN")]
     public float speed = 3f;
 
-    private float distance;       // distancia total A-B
-    private float timeTracker = 0f; // tiempo acumulado (puede ir hacia adelante o atrás)
+    private float distance;   
+    private float timeTracker = 0f; 
 
     private Clock clock;
+
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip plataformaClip;
+
+    [Header("Trigger para sonido")]
+    [SerializeField] private float sonidoDistance = 5f;
+
+    private Transform player;
+    private bool sonidoActivo = false;
 
     void Start()
     {
         if (TimeControls.Instance != null)
             clock = TimeControls.Instance.globalClock;
         else
-            Debug.LogWarning("⚠️ No se encontró TimeControls.Instance. Se usará tiempo normal.");
+            Debug.LogWarning("No se encontró TimeControls.Instance. Se usará tiempo normal.");
 
         InitializePlatform();
+
+        player = Camera.main.transform;
+
+        if (audioSource != null && plataformaClip != null)
+        {
+            audioSource.clip = plataformaClip;
+            audioSource.loop = true;
+            audioSource.playOnAwake = false;
+        }
     }
 
     void InitializePlatform()
@@ -34,7 +53,7 @@ public class MovingPlatformChronos : MonoBehaviour
 
         if (pointA == null || pointB == null)
         {
-            Debug.LogError("❌ Faltan puntos A o B en " + gameObject.name);
+            Debug.LogError("Faltan puntos A o B en " + gameObject.name);
             return;
         }
 
@@ -62,14 +81,27 @@ public class MovingPlatformChronos : MonoBehaviour
 
         float delta = clock != null ? clock.deltaTime : Time.deltaTime;
 
-        // acumulamos el tiempo (puede ser positivo o negativo)
         timeTracker += delta * speed;
 
-        // ping-pong matemático infinito: se repite y refleja
         float t = Mathf.PingPong(timeTracker / distance, 1f);
 
-        // interpolación
         transform.position = Vector3.Lerp(pointA.position, pointB.position, t);
+
+        if (player != null && audioSource != null)
+        {
+            float distancia = Vector3.Distance(transform.position, player.position);
+
+            if (distancia <= sonidoDistance && !sonidoActivo)
+            {
+                audioSource.Play();
+                sonidoActivo = true;
+            }
+            else if (distancia > sonidoDistance && sonidoActivo)
+            {
+                audioSource.Stop();
+                sonidoActivo = false;
+            }
+        }
     }
 
     void OnCollisionEnter(Collision collision)

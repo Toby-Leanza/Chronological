@@ -3,6 +3,16 @@ using UnityEngine;
 
 public class TimeControls : MonoBehaviour
 {
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip freezeSound;
+    [SerializeField] private AudioClip unfreezeSound;
+    [SerializeField] private AudioSource rewindSource;
+    [SerializeField] private AudioSource forwardSource;
+    [SerializeField] private AudioClip rewindClip;
+    [SerializeField] private AudioClip forwardClip;
+
+
+
     public static TimeControls Instance { get; private set; }
 
     public Clock globalClock;
@@ -19,6 +29,11 @@ public class TimeControls : MonoBehaviour
 
     void Awake()
     {
+        if (rewindSource != null && rewindClip != null)
+        rewindSource.clip = rewindClip;
+        if (forwardSource != null && forwardClip != null)
+            forwardSource.clip = forwardClip;
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -32,7 +47,12 @@ public class TimeControls : MonoBehaviour
         {
             isFrozen = !isFrozen;
             globalClock.localTimeScale = isFrozen ? 0f : normalSpeed;
-            Debug.Log(isFrozen ? "Congelado" : "Descongelado");
+
+            if (audioSource != null)
+            {
+                audioSource.PlayOneShot(isFrozen ? freezeSound : unfreezeSound);
+            }
+
 
             if (isFrozen && cloneManager != null)
             {
@@ -46,6 +66,9 @@ public class TimeControls : MonoBehaviour
             {
                 isRewinding = true;
                 globalClock.localTimeScale = rewindSpeed;
+
+                if (rewindSource != null && !rewindSource.isPlaying)
+                    rewindSource.Play();
             }
         };
         controls.Player.Rewind.canceled += ctx =>
@@ -54,6 +77,9 @@ public class TimeControls : MonoBehaviour
             {
                 isRewinding = false;
                 globalClock.localTimeScale = 0f;
+
+                if (rewindSource != null && rewindSource.isPlaying)
+                    rewindSource.Stop();
             }
         };
 
@@ -63,6 +89,9 @@ public class TimeControls : MonoBehaviour
             {
                 isForwarding = true;
                 globalClock.localTimeScale = forwardSpeed;
+
+                if (forwardSource != null && !forwardSource.isPlaying)
+                    forwardSource.Play();
             }
         };
         controls.Player.Forward.canceled += ctx =>
@@ -71,6 +100,9 @@ public class TimeControls : MonoBehaviour
             {
                 isForwarding = false;
                 globalClock.localTimeScale = 0f;
+
+                if (forwardSource != null && forwardSource.isPlaying)
+                    forwardSource.Stop();
             }
         };
     }

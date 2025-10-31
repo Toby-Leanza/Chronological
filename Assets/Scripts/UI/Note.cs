@@ -11,6 +11,9 @@ public class NotaInteractiva : MonoBehaviour
     private PlayerMovement playerMovement;
     private bool playerInRange = false;
     private bool notaAbierta = false;
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip abrirClip;
 
     void Start()
     {
@@ -49,25 +52,28 @@ public class NotaInteractiva : MonoBehaviour
         {
             notaUI.SetActive(true);
             notaAbierta = true;
-
+    
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
-
+    
             if (playerMovement != null)
                 playerMovement.enableCameraLook = false;
+    
+            if (audioSource != null && abrirClip != null)
+                audioSource.PlayOneShot(abrirClip);
         }
     }
-
+    
     void CerrarNota()
     {
         if (notaUI != null)
         {
             notaUI.SetActive(false);
             notaAbierta = false;
-
+    
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
-
+    
             if (playerMovement != null)
                 playerMovement.enableCameraLook = true;
         }
