@@ -13,13 +13,12 @@ public abstract class Living : MonoBehaviour
 
     [Header("State")]
     protected bool isGrounded = false;
-    protected bool IsFrozen => TimeControls.Instance != null &&  TimeControls.Instance.isFrozen;
+    protected bool IsFrozen => TimeControls.Instance != null && TimeControls.Instance.isFrozen;
 
     [Header("Recordings")]
-    public static List<KeyFrameData> globalFrames = new List<KeyFrameData>();
-    public List<PosFrameData> localFrames = new List<PosFrameData>();
-    public static KeyRecorder keyRecorder;
+    public List<PosFrameData> localFrames = new List<PosFrameData>(); // ✅ Cada instancia tiene su propia lista
     protected PosRecorder posRecorder;
+    protected static KeyRecorder keyRecorder; // ✅ KeyFrames compartidos entre todos
 
     protected virtual void Start()
     {
@@ -31,66 +30,34 @@ public abstract class Living : MonoBehaviour
         {
             rb.freezeRotation = true;
         }
+
+        // Agregar frame inicial
+        localFrames.Add(new PosFrameData(transform.position, transform.rotation));
     }
+
     public virtual void UnfrozenMovement(KeyFrameData keyFrame)
     {
         Vector2 moveInput = keyFrame.GetMovementVector();
         bool jumpInput = keyFrame.jump;
 
-        // MOVIMIENTO HORIZONTAL
-        if (moveInput.magnitude > 0.01f)
-        {
-            Quaternion baseRotation = keyFrame.movementRotation;
+        // MOVIMIENTO con dirección relativa a la rotación de la cámara
+        Vector3 direction = keyFrame.movementRotation * new Vector3(moveInput.x, 0, moveInput.y);
+        direction.y = 0;
+        direction.Normalize();
 
-            Vector3 forward = baseRotation * Vector3.forward;
-            Vector3 right = baseRotation * Vector3.right;
-            forward.y = 0f; right.y = 0f;
-            forward.Normalize(); right.Normalize();
+        Vector3 targetVelocity = direction * speed;
 
-            Vector3 direction = forward * moveInput.y + right * moveInput.x;
-            Vector3 targetVelocity = direction * speed;
-
-            // ✅ CORRECTO: Modificar rb.linearVelocity directamente
-            rb.linearVelocity = new Vector3(
-                targetVelocity.x,
-                rb.linearVelocity.y,  // Mantener velocidad Y (gravedad)
-                targetVelocity.z
-            );
-        }
-        else
-        {
-            // ✅ FRICCIÓN directa en rb.linearVelocity
-            Vector3 currentVel = rb.linearVelocity;
-            rb.linearVelocity = new Vector3(
-                currentVel.x * 0.7f,
-                currentVel.y,        // Mantener velocidad Y
-                currentVel.z * 0.7f
-            );
-        }
+        // Aplicar movimiento manteniendo velocidad Y
+        rb.linearVelocity = new Vector3(targetVelocity.x, rb.linearVelocity.y, targetVelocity.z);
 
         // SALTO
         if (jumpInput && isGrounded)
         {
-            // ✅ Salto directo en rb.linearVelocity
-            Vector3 currentVel = rb.linearVelocity;
-            rb.linearVelocity = new Vector3(
-                currentVel.x,
-                jumpForce,           // Aplicar salto en Y
-                currentVel.z
-            );
+            rb.linearVelocity = new Vector3(rb.linearVelocity.x, jumpForce, rb.linearVelocity.z);
             isGrounded = false;
         }
     }
 
-    // ✅ MÉTODO para inicializar el static keyRecorder
-    public static void SetPlayerKeyRecorder(KeyRecorder recorder)
-    {
-        keyRecorder = recorder;
-        if (keyRecorder != null)
-        {
-            globalFrames = new List<KeyFrameData>(keyRecorder.recordedKeyFrames);
-        }
-    }
     protected virtual void CheckGrounded()
     {
         isGrounded = Physics.Raycast(transform.position, Vector3.down, 1.1f);
@@ -99,5 +66,17 @@ public abstract class Living : MonoBehaviour
     protected virtual void FixedUpdate()
     {
         CheckGrounded();
+
+        // Grabar posición actual en localFrames (si no está congelado)
+        if (!IsFrozen && posRecorder != null && posRecorder.record)
+        {
+            // Solo grabar si la posición cambió significativamente
+            if (localFrames.Count == 0 ||
+                Vector3.Distance(localFrames[localFrames.Count - 1].position, transform.position) > 0.01f)
+            {
+                localFrames.Add(new PosFrameData(transform.position, transform.rotation));
+            }
+        }
     }
+
 }

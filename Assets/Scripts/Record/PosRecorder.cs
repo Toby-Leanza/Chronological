@@ -16,15 +16,9 @@ public class PosRecorder : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (!record || targetTransform == null)
+        if (!record || targetTransform == null || TimeControls.Instance != null && TimeControls.Instance.isFrozen)
         {
             Debug.Log($"PosRecorder no grabando - Record: {record}, Target: {targetTransform != null}");
-            return;
-        }
-
-        if (TimeControls.Instance != null && TimeControls.Instance.isFrozen)
-        {
-            Debug.Log("Tiempo congelado, no grabando");
             return;
         }
 
@@ -36,16 +30,5 @@ public class PosRecorder : MonoBehaviour
 
         recordedPosFrames.Add(currentPosFrame);
         Debug.Log($"PosFrame grabado #{recordedPosFrames.Count} - Pos: {targetTransform.position}");
-    }
-
-    public void ClearRecording()
-    {
-        recordedPosFrames.Clear();
-        Debug.Log("PosRecorder limpiado");
-    }
-
-    public int GetFrameCount()
-    {
-        return recordedPosFrames.Count;
     }
 }

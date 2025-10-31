@@ -3,128 +3,176 @@ using UnityEngine;
 
 public class CloneController : Living
 {
-    [Header("Clone References")]
-    public PlayerMovement playerMovement;
+    [Header("Clone Settings")]
+    public CloneManager cloneManager;
+    private PlayerMovement playerMovement; // Referencia al jugador para copiar frames
 
     [Header("Clone State")]
-    private int frameIndex = 0;
-
-    protected bool IsRewinding => TimeControls.Instance != null && TimeControls.Instance.isFrozen;
-    protected bool IsForwarding => TimeControls.Instance != null && TimeControls.Instance.isFrozen;
-
+    public int frameIndex = 0;
+    private bool isActive = false;
+    private bool wasRewinding = false;
+    private bool wasForwarding = false;
     protected override void Start()
     {
         base.Start();
-        posRecorder = GetComponent<PosRecorder>();
 
-        if (posRecorder != null)
+        if (cloneManager == null)
+            cloneManager = FindAnyObjectByType<CloneManager>();
+
+        // ✅ Buscar al jugador para copiar sus frames locales
+        playerMovement = FindAnyObjectByType<PlayerMovement>();
+        if (playerMovement != null)
         {
-            posRecorder.record = true;
+            // Copiar los frames locales actuales del jugador
+            localFrames = playerMovement.localFrames;
         }
 
-        // Configurar física específica del clon
+        // Empezar desde el frame actual del jugador
+        frameIndex = playerMovement?.localFrames.Count - 1 ?? 0;
+        isActive = false;
+
+        // Configurar física inicial (tiempo congelado)
         if (rb != null)
         {
             rb.isKinematic = true;
-            if (col != null) col.isTrigger = true;
+        }
+        if (col != null)
+        {
+            col.isTrigger = true;
         }
 
-        speed = playerMovement.speed;
-        jumpForce = playerMovement.jumpForce;
+        // Suscribirse a eventos
+        TimeControls.OnFreeze += OnTimeFrozen;
+        TimeControls.OnUnfreeze += OnTimeUnfrozen;
 
-        TimeControls.OnFreeze += OnFreeze;
-        TimeControls.OnUnfreeze += OnUnfreeze;
-
-        frameIndex = localFrames.Count - 1;
-        localFrames = playerMovement.localFrames;
-        FrozenMovement();
+        Debug.Log($"🔹 Clon creado - Frames locales heredados: {localFrames.Count}, Frame inicial: {frameIndex}");
     }
 
     protected override void FixedUpdate()
     {
-        base.FixedUpdate(); // CheckGrounded del Living
+        base.FixedUpdate(); // CheckGrounded + Grabación automática de frames
 
-        // Actualizar frames locales
-        if (posRecorder != null)
+        if (!isActive)
         {
-            localFrames = new List<PosFrameData>(posRecorder.recordedPosFrames);
-        }
-
-        if (IsFrozen)
-        {
-            FrozenMovement();
+            // === TIEMPO CONGELADO ===
+            FrozenBehavior();
         }
         else
         {
-            UnfrozenMovement(globalFrames[frameIndex]);
+            // === TIEMPO DESCONGELADO ===
+            UnfrozenBehavior();
+        }
+    }
+
+    private void FrozenBehavior()
+    {
+        // 1. ACTUALIZAR frameIndex según Rewind/Forward
+        if (TimeControls.Instance != null)
+        {
+            if (TimeControls.Instance.isRewinding && !wasRewinding)
+            {
+                // Rewind: disminuir frameIndex
+                frameIndex = Mathf.Max(0, frameIndex - 1);
+                wasRewinding = true;
+                Debug.Log($"⏪ Clon rewinding to frame: {frameIndex}");
+            }
+            else if (TimeControls.Instance.isForwarding && !wasForwarding)
+            {
+                // Forward: aumentar frameIndex  
+                int maxFrames = localFrames.Count - 1;
+                frameIndex = Mathf.Min(maxFrames, frameIndex + 1);
+                wasForwarding = true;
+                Debug.Log($"⏩ Clon forwarding to frame: {frameIndex}");
+            }
+
+            // Reset flags cuando se sueltan las teclas
+            if (!TimeControls.Instance.isRewinding) wasRewinding = false;
+            if (!TimeControls.Instance.isForwarding) wasForwarding = false;
+        }
+
+        // 2. APLICAR frame de POSICIÓN desde localFrames propios
+        if (localFrames != null && frameIndex < localFrames.Count && frameIndex >= 0)
+        {
+            transform.position = localFrames[frameIndex].position;
+            transform.rotation = localFrames[frameIndex].rotation;
+        }
+    }
+
+    private void UnfrozenBehavior()
+    {
+        // 1. AUMENTAR frameIndex automáticamente
+        int maxKeyFrames = Living.keyRecorder?.recordedKeyFrames.Count - 1 ?? 0;
+        if (frameIndex < maxKeyFrames)
+        {
             frameIndex++;
         }
 
-        ApplyFrame();
-    }
-
-    private void FrozenMovement()
-    {
-        transform.position = localFrames[frameIndex].position;
-        transform.rotation = localFrames[frameIndex].rotation;
-
-
-        if (IsRewinding)
+        // 2. EJECUTAR movimiento con física (UnfrozenMovement)
+        if (Living.keyRecorder != null && frameIndex < Living.keyRecorder.recordedKeyFrames.Count)
         {
-            frameIndex = Mathf.Max(0, frameIndex - 1);
+            KeyFrameData currentFrame = Living.keyRecorder.recordedKeyFrames[frameIndex];
+            UnfrozenMovement(currentFrame);
         }
-        else if (IsForwarding)
+        else
         {
-            frameIndex = Mathf.Min(globalFrames.Count - 1, frameIndex + 1);
-        }
-
-        localFrames.Add(new PosFrameData(transform.position, transform.rotation));
-    }
-
-    private void ApplyFrame()
-    {
-        if (IsFrozen)
-        {
-            // Tiempo congelado: usar posiciones grabadas
-            if (localFrames.Count > 0 && frameIndex < localFrames.Count)
+            // No hay más frames - quedarse quieto
+            if (rb != null)
             {
-                transform.position = localFrames[frameIndex].position;
-                transform.rotation = localFrames[frameIndex].rotation;
+                rb.linearVelocity = Vector3.zero;
             }
         }
-        // Tiempo normal: la física maneja la posición automáticamente
+
+        // ✅ La grabación de frames locales se hace automáticamente en el FixedUpdate del Living
     }
 
-    private void OnFreeze()
+    private void OnTimeFrozen()
     {
+        // Congelar: cambiar a modo posición + trigger
+        isActive = false;
+
         if (rb != null)
         {
             rb.isKinematic = true;
             rb.linearVelocity = Vector3.zero;
-            if (col != null) col.isTrigger = true;
         }
+        if (col != null)
+        {
+            col.isTrigger = true;
+        }
+
+        Debug.Log($"❄️ Clon congelado en frame: {frameIndex}, Frames locales: {localFrames.Count}");
     }
 
-    private void OnUnfreeze()
+    private void OnTimeUnfrozen()
     {
+        // Descongelar: cambiar a modo física
+        isActive = true;
 
-        // Ramificar línea temporal
-        if (localFrames.Count > frameIndex + 1)
-        {
-            localFrames.RemoveRange(frameIndex + 1, localFrames.Count - 1);
-            Debug.Log($"✅ Línea temporal ramificada. Frames mantenidos: {localFrames.Count}");
-        }
         if (rb != null)
         {
             rb.isKinematic = false;
-            if (col != null) col.isTrigger = false;
+        }
+        if (col != null)
+        {
+            col.isTrigger = false;
         }
 
+        Debug.Log($"🔄 Clon descongelado - Continuando desde frame: {frameIndex}");
     }
 
-    private void OnDestroy()
+    void OnDestroy()
     {
-        TimeControls.OnFreeze -= OnFreeze;
-        TimeControls.OnUnfreeze -= OnUnfreeze;
+        TimeControls.OnFreeze -= OnTimeFrozen;
+        TimeControls.OnUnfreeze -= OnTimeUnfrozen;
+
+        if (cloneManager != null)
+            cloneManager.CloneDestroyed();
+    }
+
+    // Método para debug
+    public void PrintCloneState()
+    {
+        string state = isActive ? "ACTIVO" : "CONGELADO";
+        Debug.Log($"🔹 Clon [{state}] - Frame: {frameIndex}, LocalFrames: {localFrames?.Count ?? 0}");
     }
 }
