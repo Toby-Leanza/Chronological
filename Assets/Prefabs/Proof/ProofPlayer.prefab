@@ -224,6 +224,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -245,6 +247,7 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
@@ -316,6 +319,7 @@ MonoBehaviour:
   mouseSensitivity: 900
   cameraHolder: {fileID: 8624259755927744867}
   playerCamera: {fileID: 500761387758043027}
+  footstepInterval: 0.5
   deadZone: 0.001
   timeControls: {fileID: 0}
 --- !u!114 &7915423543873106909

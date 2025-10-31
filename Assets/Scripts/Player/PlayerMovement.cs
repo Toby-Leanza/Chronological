@@ -20,6 +20,9 @@ public class PlayerMovement : MonoBehaviour
     [Header("Camera Advanced")]
     public float deadZone = 0.001f;
 
+    [Header("Control de cÃ¡mara")]
+    public bool enableCameraLook = true;
+
     private Rigidbody rb;
     private Vector2 moveInput;
     private bool jumpPressed;
@@ -59,7 +62,7 @@ public class PlayerMovement : MonoBehaviour
         if (context.performed && isGrounded)
         {
             jumpPressed = true;
-            // No hay sonido de salto, solo el de caída después
+            // No hay sonido de salto, solo el de caï¿½da despuï¿½s
         }
     }
 
@@ -96,11 +99,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void CheckLandingSound()
     {
-        // Reproducir sonido de caída al aterrizar
+        // Reproducir sonido de caï¿½da al aterrizar
         if (isGrounded && !wasGrounded)
         {
-            // Pequeño delay para que no se reproduzca en el salto inicial
-            if (rb.linearVelocity.y < -2f) // Solo si cayó desde cierta altura
+            // Pequeï¿½o delay para que no se reproduzca en el salto inicial
+            if (rb.linearVelocity.y < -2f) // Solo si cayï¿½ desde cierta altura
             {
                 Invoke(nameof(PlayFallSound), 0.1f);
             }
@@ -117,6 +120,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMouseLook()
     {
+        if (!enableCameraLook) return;
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
 
@@ -141,7 +145,13 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovement()
     {
-        if (timeControls != null && timeControls.isFrozen) return;
+        if (timeControls != null && timeControls.isFrozen)
+        {
+            rb.isKinematic = true;
+            return;
+        }
+
+        rb.isKinematic = false;
 
         if (playerCamera != null)
         {
