@@ -148,6 +148,7 @@ public class PlayerMovement : MonoBehaviour
         if (timeControls != null && timeControls.isFrozen)
         {
             rb.isKinematic = true;
+
             return;
         }
 
