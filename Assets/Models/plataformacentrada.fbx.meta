@@ -1,7 +1,11 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Models/plataformacentrada.fbx.meta
 guid: aae7d938686534043beed79c0409f9fd
+========
+guid: 84add2d0b4298a346afe9cb2164558b2
+>>>>>>>> main:Assets/Models/policia.fbx.meta
 ModelImporter:
-  serializedVersion: 22200
+  serializedVersion: 24200
   internalIDToNameTable: []
   externalObjects: {}
   materials:
@@ -56,6 +60,9 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
