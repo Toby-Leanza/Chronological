@@ -1,10 +1,12 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class PauseMenu : MonoBehaviour
 {
     public GameObject pauseMenu;
     public GameObject settingsMenu;
+    public GameObject levelsMenu;
     public GameObject controlsMenu;
     public GameObject playerUI;
 
@@ -19,17 +21,17 @@ public class PauseMenu : MonoBehaviour
 
     void Update()
     {
-        // SOLUCIÓN: Verificar si está pausado Y en submenú
+        // SOLUCIÃ“N: Verificar si estÃ¡ pausado Y en submenÃº
         if (Input.GetKeyDown(KeyCode.P))
         {
-            // Solo bloquear la tecla P si está pausado Y en submenú
+            // Solo bloquear la tecla P si estÃ¡ pausado Y en submenÃº
             if (!isPaused || !inSubMenu)
             {
                 TogglePause();
             }
         }
 
-        // Tecla Escape para volver atrás desde submenús
+        // Tecla Escape para volver atrÃ¡s desde submenÃºs
         if (Input.GetKeyDown(KeyCode.Escape) && inSubMenu)
         {
             HandleBackButton();
@@ -43,7 +45,7 @@ public class PauseMenu : MonoBehaviour
         pauseMenu.SetActive(isPaused);
         playerUI.SetActive(!isPaused);
 
-        // Si estamos despausando, cerrar todos los submenús
+        // Si estamos despausando, cerrar todos los submenÃºs
         if (!isPaused)
         {
             settingsMenu.SetActive(false);
@@ -89,13 +91,32 @@ public class PauseMenu : MonoBehaviour
         controlsMenu.SetActive(false);
         settingsMenu.SetActive(true);
         Cursor.lockState = CursorLockMode.None;
-        // inSubMenu sigue siendo true porque aún está en settings
+        // inSubMenu sigue siendo true porque aÃºn estÃ¡ en settings
         PlayButtonClick();
+    }
+
+    public void OpenLevelsMenu()
+    {
+        levelsMenu.SetActive(true);
+        pauseMenu.SetActive(false);
+        Cursor.lockState = CursorLockMode.None;
+        inSubMenu = true;
+        PlayButtonClick();
+    }
+
+    public void LoadLevel(string sceneName)
+    {
+        // Reanudar el tiempo antes de cambiar de escena
+        Time.timeScale = 1;
+        Cursor.lockState = CursorLockMode.Locked;
+
+        PlayButtonClick();
+        SceneManager.LoadScene(sceneName);
     }
 
     public void ResumeGame()
     {
-        // Forzar el cierre de todos los menús
+        // Forzar el cierre de todos los menÃºs
         settingsMenu.SetActive(false);
         controlsMenu.SetActive(false);
         pauseMenu.SetActive(false);
@@ -128,7 +149,7 @@ public class PauseMenu : MonoBehaviour
         Application.Quit();
     }
 
-    // Métodos para los sonidos
+    // MÃ©todos para los sonidos
     public void PlayButtonHover()
     {
         if (audioManager != null)
