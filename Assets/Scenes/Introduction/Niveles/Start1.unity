@@ -8068,6 +8068,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5925891527189592385, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_text
+      value: "Bienvenido a Chronological: Agarr\xE1 el reloj para empezar."
+      objectReference: {fileID: 0}
     - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
       propertyPath: m_LocalScale.x
       value: 5.884097
@@ -9029,6 +9033,75 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1864588198}
   m_CullTransparentMesh: 1
+--- !u!1001 &1872905073
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5925891527189592385, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_text
+      value: Presionar E para leer notas!!!!
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 5.884097
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 6.4765224
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -54.29
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 8.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 24.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 8436749930836050184, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8937806741523437795, guid: 91ab75072fc118441bd537783a064445, type: 3}
+      propertyPath: m_Name
+      value: Note (1)
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 91ab75072fc118441bd537783a064445, type: 3}
 --- !u!1 &1879031569
 GameObject:
   m_ObjectHideFlags: 0
@@ -12760,8 +12833,8 @@ SceneRoots:
   - {fileID: 688002894}
   - {fileID: 233305733}
   - {fileID: 821731477}
-  - {fileID: 6799611200619308135}
   - {fileID: 684723206}
+  - {fileID: 6799611200619308135}
   - {fileID: 1831142689}
   - {fileID: 433473037}
   - {fileID: 249761456}
@@ -12774,3 +12847,4 @@ SceneRoots:
   - {fileID: 718065757}
   - {fileID: 793489083}
   - {fileID: 1636776797}
+  - {fileID: 1872905073}
