@@ -12726,6 +12726,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 444145105213747124, guid: eec28bb73edf4a34eb3263fc08336e8e, type: 3}
+      propertyPath: timeControls
+      value: 
+      objectReference: {fileID: 1486113625}
     - target: {fileID: 3829605688364816626, guid: eec28bb73edf4a34eb3263fc08336e8e, type: 3}
       propertyPath: m_Name
       value: Player
